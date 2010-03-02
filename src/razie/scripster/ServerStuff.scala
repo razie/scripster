@@ -115,4 +115,3 @@ class MyServer extends SimpleClasspathServer ("") {
      else null
     }
 }
-

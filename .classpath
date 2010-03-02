@@ -10,5 +10,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalacompiler"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalaswing"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/20widgets-swing"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
