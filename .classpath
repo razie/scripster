@@ -5,11 +5,11 @@
 	<classpathentry kind="con" path="ch.epfl.lamp.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/20widgets"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/razie"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/razweb"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalacompiler"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalaswing"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/20widgets-swing"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/razbase"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

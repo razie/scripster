@@ -61,6 +61,12 @@ object ScriptService {
      new razie.draw.widgets.ScriptPad (mkATI(c.id) _)
   }
 
+  @SoaMethod (descr="exec a script", args=Array("lang"))
+  def simpleSession (lang:String) = {
+     val c = Sessions.create
+     new razie.draw.widgets.ScriptPad (run=mkATI(c.id) _, simple=true)
+  }
+
   def mkATI (sessionId:String)() : ActionToInvoke = {
     new ServiceActionToInvoke("scripting", cmdRSCRIPT, "sessionId", sessionId) {
        override def act (ctx:ActionContext) : AnyRef = {

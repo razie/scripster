@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build" name="scripster">
-    <property file="../razie/razie.properties"/>
+    <property file="../razbase/razie.properties"/>
     <property name="w" value="${workspace.dir}"/>
     <property name="d" value="./dist"/>
-    <import   file="${w}/razie/base-build.xml"/>
+    <import   file="${w}/razbase/base-build.xml"/>
 
     <path id="depy.path">
-        <pathelement location="../razie/bin/"/>
-        <pathelement location="../razie/lib/json.jar"/>
+        <pathelement location="../razbase/bin/"/>
+        <pathelement location="../razbase/lib/json.jar"/>
         <pathelement location="../20widgets/bin/"/>
         <pathelement location="../20widgets-swing/bin/"/>
         <pathelement location="../razweb/bin/"/>
@@ -17,7 +17,7 @@
     </path>
 
     <target name="clean-all">
-        <ant target="clean" dir="${w}/razie/"/>
+        <ant target="clean" dir="${w}/razbase/"/>
         <ant target="clean" dir="${w}/20widgets/"/>
         <ant target="clean" dir="${w}/20widgets-swing/"/>
         <ant target="clean" dir="${w}/razweb/"/>
@@ -25,13 +25,13 @@
     </target>
 
     <target name="build-all">
-        <ant target="build" dir="${w}/razie/"/>
+        <ant target="build" dir="${w}/razbase/"/>
         <ant target="build" dir="${w}/20widgets/"/>
         <ant target="build" dir="${w}/20widgets-swing/"/>
         <ant target="build" dir="${w}/razweb/"/>
         <ant target="build" dir="${w}/scripster/"/>
 
-        <ant target="jar-only" dir="${w}/razie/"/>
+        <ant target="jar-only" dir="${w}/razbase/"/>
         <ant target="jar-only" dir="${w}/20widgets/"/>
         <ant target="jar-only" dir="${w}/20widgets-swing/"/>
         <ant target="jar-only" dir="${w}/razweb/"/>
@@ -73,7 +73,7 @@
 
         <jar file="timestamp.txt"
              destfile="${d}/scripster-dist.jar"/>
-        <jar basedir="${w}/razie/bin"
+        <jar basedir="${w}/razbase/bin"
              destfile="${d}/scripster-dist.jar" update="true" />
         <jar basedir="${w}/20widgets/bin"
              destfile="${d}/scripster-dist.jar" update="true" />
@@ -84,7 +84,7 @@
         <jar basedir="${w}/scripster/bin"
              destfile="${d}/scripster-dist.jar" update="true" />
         <jar destfile="${d}/scripster-dist.jar" update="true">
-            <zipfileset src="${w}/razie/lib/json.jar"/>
+            <zipfileset src="${w}/razbase/lib/json.jar"/>
             <zipfileset src="${w}/razweb/lib/mime-util.jar"/>
         </jar>
 
