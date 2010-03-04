@@ -63,21 +63,32 @@ object Scripster {
 object Repl {
    ScriptFactory.init (new ScriptFactoryScala (null, true))
    
-   def exec (lang:String, script:String, ctx:ScriptContext) : AnyRef = {
-     razie.Log ("execute script=" + script)
-     val s = ScriptFactory.make ("scala", script)
-     s.eval(ctx)
+   def exec (lang:String, script:String, session:ScriptSession) : AnyRef = {
+     if (session add script) {
+       val s = ScriptFactory.make ("scala", session.script)
+       razie.Log ("execute script=" + session.script)
+       session.clear
+       s.eval(session.ctx)
+       }
+    else null
    }
    
   def options (sessionId:String, line:String) = {
-    val session = Sessions get sessionId
-      
-    val ret = 
-      if (line endsWith "a") razie.AI("b") :: razie.AI("c") :: Nil
-      else if (line endsWith "b") razie.AI("c") :: Nil
-      else Nil
-      
+    Sessions get sessionId match {
+       case Some(session) => {
+    val l = session.ctx.options (line)
+//    val ret = 
+//      if (line endsWith "a") razie.AI("b") :: razie.AI("c") :: Nil
+//      else if (line endsWith "b") razie.AI("c") :: Nil
+//      else Nil
+   import scala.collection.JavaConversions._
+   
+    val ret:List[razie.AI] = l.map (s=>razie.AI(s)).toList
+    
     razie.Debug ("options for: \'"+line+"\' are: " +ret)
     ret
+       }
+       case None => Nil
+    }
   }
 }

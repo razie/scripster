@@ -11,5 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/20widgets-swing"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/razbase"/>
+	<classpathentry kind="lib" path="lib/jline-0_9_5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

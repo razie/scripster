@@ -6,11 +6,25 @@ package razie.scripting
 
 import com.razie.pub.base.RazScript
 import razie.base.ScriptContext
+import scala.tools.{nsc => nsc}
 
 /** will cache the environment */
 class ScalaScriptContext (parent:ScriptContext) extends ScriptContext.Impl (parent) {
-   val env = new scala.tools.nsc.Settings
-   val p = new scala.tools.nsc.Interpreter (env)         
+   var lastError : String = null
+   val env = new nsc.Settings (err)
+   val p = new nsc.Interpreter (env)         
+   
+      /** content assist options */
+   override def options (scr:String) : java.util.List[String] = {
+      val l = new java.util.ArrayList[String]()
+      val c = new nsc.interpreter.Completion(p)
+      
+      c.jline.complete (scr, scr.length-1, l)
+      c.jline.complete (scr, scr.length-1, l)
+      l
+   }
+   
+   def err (s:String) : Unit = { lastError = s }
 }
 
 /** an interpreted scala script */
@@ -24,23 +38,23 @@ class ScriptScala (val script:String) extends RazScript {
      * 
      * @param c the context for the script
      */
-   override def eval(c:ScriptContext) : AnyRef = {
+   override def eval(ctx:ScriptContext) : AnyRef = {
       var result:AnyRef = "";
 
-      val env = if (c.isInstanceOf[ScalaScriptContext])
-         c.asInstanceOf[ScalaScriptContext].env
+      val env = if (ctx.isInstanceOf[ScalaScriptContext])
+         ctx.asInstanceOf[ScalaScriptContext].env
          else new scala.tools.nsc.Settings
-      val p = if (c.isInstanceOf[ScalaScriptContext])
-         c.asInstanceOf[ScalaScriptContext].p
+      val p = if (ctx.isInstanceOf[ScalaScriptContext])
+         ctx.asInstanceOf[ScalaScriptContext].p
          else new scala.tools.nsc.Interpreter (env)         
       
       try {
-         p.bind ("ctx", classOf[ScriptContext].getCanonicalName, c)
+         p.bind ("ctx", classOf[ScriptContext].getCanonicalName, ctx)
          
-         val iter = c.getPopulatedAttr().iterator
+         val iter = ctx.getPopulatedAttr().iterator
          while (iter.hasNext) {
             val key = iter.next
-            val obj = c.getAttr(key);
+            val obj = ctx.getAttr(key);
             p.bind (key, obj.getClass.getCanonicalName, obj)
          }
 
@@ -56,8 +70,11 @@ class ScriptScala (val script:String) extends RazScript {
 
             // TODO put back all variables
         } catch {
-          case e:Exception =>
-            throw new RuntimeException("While processing script: " + this.script, e);
+          case e:Exception => {
+            razie.Log ("While processing script: " + this.script, e)
+            result = "ERROR: " + e.getMessage + " : " + ctx.asInstanceOf[ScalaScriptContext].lastError
+            ctx.asInstanceOf[ScalaScriptContext].lastError = ""
+          }
         }
     
         result;

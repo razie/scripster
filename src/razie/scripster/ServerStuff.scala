@@ -35,7 +35,7 @@ class SH extends SocketCmdHandler {
      val script = if (args != null && args.length > 0) cmd + " " + args else cmd
      val sessionId = parms.getProperty("sessionId")
      Sessions.get (sessionId).map (session=>
-           Repl.exec ("scala", script, session.ctx)).getOrElse("No session found id="+sessionId)
+           Repl.exec ("scala", script, session)).getOrElse("No session found id="+sessionId)
      }
 
    override def getSupportedActions() = Array[String]()
@@ -52,7 +52,7 @@ object ScriptService {
   @SoaMethod (descr="exec a script", args=Array("sessionId", "language", "script"))
   def run (sessionId:String, language:String, script:String) = {
      Sessions.get (sessionId).map (session=>
-           Repl.exec (language, script, session.ctx)).getOrElse("No session found id="+sessionId)
+           Repl.exec (language, script, session)).getOrElse("No session found id="+sessionId)
   }
   
   @SoaMethod (descr="exec a script", args=Array("lang"))
@@ -100,10 +100,32 @@ object Sessions {
   }
 }
 
+// Sessions of scripting - maintain state
 class ScriptSession {
-   val time = System.currentTimeMillis
-   val id = time.toString // TODO use GUID
-   val ctx = new ScalaScriptContext(ScriptContext.Impl.global)
+  val time = System.currentTimeMillis
+  val id = time.toString // TODO use GUID
+  val ctx = new ScalaScriptContext(ScriptContext.Impl.global)
+  var buffer = new StringBuilder()
+  var pcount = 0
+
+  def script = {
+    var s = buffer.toString
+    // TODO idiot code but I'm bored of this right now, want to play piano instead
+    if (s.indexOf("{") == 0 && s.lastIndexOf("}") == s.length-1) 
+      s substring (1,s.length-1)
+    else 
+      s
+  }
+
+  def add (more:String) : Boolean = {
+    for (c <- more; if c=='{') pcount+=1
+    for (c <- more; if c=='}') pcount-=1
+    buffer append more
+    if (pcount == 0) buffer append "\n" // must treat like a line
+    pcount == 0 // true if can execute
+  }
+  
+  def clear { pcount = 0; buffer = new StringBuilder() }
 }
 
 class MyServer extends SimpleClasspathServer ("") {
