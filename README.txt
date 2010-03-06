@@ -1,13 +1,18 @@
-This code is copyrighted by Razvan Cojocaru and presently shared under the Creative Commons license...see LICENSE.txt
+/**  ____    __    ____  ____  ____/___      ____  __  __  ____
+ *  (  _ \  /__\  (_   )(_  _)( ___) __)    (  _ \(  )(  )(  _ \
+ *   )   / /(__)\  / /_  _)(_  )__)\__ \     )___/ )(__)(  ) _ <
+ *  (_)\_)(__)(__)(____)(____)(____)___/    (__)  (______)(____/
+ *                      
+ *  Copyright (c) Razvan Cojocaru, 2007+, Creative Commons Attribution 3.0
+ */
 
 What's this?
 ------------
-Some interesting concepts and related utilities.
+Interactive scripting pad for scala. It is available over telnet, http and swing.
 
 Why?
 ----
-Well, just like i wish I didn't have to write it, there's no point in making others write it, should they need it. 
-
+So anyone can interact with a running application, having access to all the application's objects. Obviously, we don't want 'anyone' to have this kind of access, so you will no doubt take steps to protect this.
 
 Details
 -------
@@ -16,8 +21,7 @@ The code is generally self-documented. Keep your eyes out for package.html and s
 
 Roadmap
 -------
-I will only maintain this as I need to. If there's some large user community developing (doubt that, really), 
-we'll see - I could co-op some volunteers.
+May add some more scripting languages in the future but otherwise I don't think this will evolve.
 
-I will add more code as I need it/write it for all kinds of reasons.
+It may also get nicer.
 

@@ -1,6 +1,19 @@
-This code is provided AS IS. No warranties implied nor any liabilities assumed. Use at your own risk! 
+/**  ____    __    ____  ____  ____/___      ____  __  __  ____
+ *  (  _ \  /__\  (_   )(_  _)( ___) __)    (  _ \(  )(  )(  _ \
+ *   )   / /(__)\  / /_  _)(_  )__)\__ \     )___/ )(__)(  ) _ <
+ *  (_)\_)(__)(__)(____)(____)(____)___/    (__)  (______)(____/
+ *                      
+ *  Copyright (c) Razvan Cojocaru, 2007+, Creative Commons Attribution 3.0
+ */
 
-All code and resources in http://razie.googlecode.com and/or http://github.com/homecloud/razie is copyrighted by Razvan Cojocaru, under the Creative Commons Attribution 3.0 Unported License, available at http://creativecommons.org/licenses/by/3.0/.
+This code is provided AS IS. No warranties implied nor any liabilities assumed. 
+Use at your own risk! 
 
-If you don't know what the above means, you're not allowed to use, view, see or otherwise be near this! Get an education!
+All code and resources in this project is copyrighted by Razvan Cojocaru, under 
+the Creative Commons Attribution 3.0 Unported License, 
+available at http://creativecommons.org/licenses/by/3.0/.
+
+If you don't know what the above means, you're not allowed to use, view, 
+see or otherwise be near this! Get an brain!
+
 

@@ -12,6 +12,7 @@
         <pathelement location="../20widgets-swing/bin/"/>
         <pathelement location="../razweb/bin/"/>
         <pathelement location="../razweb/lib/mime-util.jar"/>
+        <pathelement location="../scripster/lib/jline-0_9_5.jar"/>
         <pathelement location="${scala.home}/lib/scala-compiler.jar"/>
         <pathelement location="${scala.home}/lib/scala-swing.jar"/>
     </path>
