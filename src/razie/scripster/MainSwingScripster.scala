@@ -14,7 +14,7 @@ import com.razie.pub.http.sample._
 import com.razie.pub.http.LightContentServer
 import com.razie.pub.base.ExecutionContext
 import razie.base._
-import razie.scripting._
+import razie.base.scripting._
 
 import razie.draw._
 import razie.draw.samples._
@@ -29,7 +29,7 @@ object MainSwingScripster extends SimpleSwingApplication {
    new java.lang.Thread ( 
          new java.lang.Runnable { 
             def run() { 
-               new ScriptScala ("1+2").eval(ScriptContext.Impl.global) 
+               new ScriptScala ("1+2").eval(ScriptContextImpl.global) 
                }}
          ).start
    

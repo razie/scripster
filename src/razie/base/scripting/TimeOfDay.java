@@ -3,7 +3,7 @@
  *   )   / /(__)\  / /_  _)(_  )__)\__ \    )___/ )(__)(  ) _ <     README.txt
  *  (_)\_)(__)(__)(____)(____)(____)___/   (__)  (______)(____/   LICENESE.txt
  */
-package razie.scripting;
+package razie.base.scripting;
 
 import java.util.Date;
 import razie.base.*;

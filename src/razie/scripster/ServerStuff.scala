@@ -14,7 +14,7 @@ import com.razie.pub.http.sample._
 import com.razie.pub.http.LightContentServer
 import com.razie.pub.base.ExecutionContext
 import razie.base._
-import razie.scripting._
+import razie.base.scripting._
 
 /** a demo content server implementation */
 class CS (proxy:LightContentServer) extends LightContentServer {
@@ -109,7 +109,7 @@ object Sessions {
 class ScriptSession {
   val time = System.currentTimeMillis
   val id = time.toString // TODO use GUID
-  val ctx = new ScalaScriptContext(ScriptContext.Impl.global)
+  val ctx = new ScalaScriptContext(ScriptContextImpl.global)
   var buffer = new StringBuilder()
   var pcount = 0
 
@@ -122,13 +122,15 @@ class ScriptSession {
       s
   }
 
-  def add (more:String) : Boolean = {
+  // accumulate and identify statement blocks
+  def accumulate (more:String) = {
     for (c <- more; if c=='{') pcount+=1
     for (c <- more; if c=='}') pcount-=1
     buffer append more
     if (pcount == 0) buffer append "\n" // must treat like a line
-    pcount == 0 // true if can execute
   }
+
+  def inStatement = pcount > 0
   
   def clear { pcount = 0; buffer = new StringBuilder() }
 }

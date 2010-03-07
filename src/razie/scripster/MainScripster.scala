@@ -14,14 +14,14 @@ import com.razie.pub.http.sample._
 import com.razie.pub.http.LightContentServer
 import com.razie.pub.base.ExecutionContext
 import razie.base._
-import razie.scripting._
+import razie.base.scripting._
 
 object MainScripster extends Application {
    // warm up the interpreter while you move your hands... :)
    new java.lang.Thread ( 
          new java.lang.Runnable { 
             def run() { 
-               new ScriptScala ("1+2").eval(ScriptContext.Impl.global) 
+               new ScriptScala ("1+2").eval(ScriptContextImpl.global) 
                }}
          ).start
    
