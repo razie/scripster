@@ -87,6 +87,7 @@
         <jar destfile="${d}/scripster-dist.jar" update="true">
             <zipfileset src="${w}/razbase/lib/json.jar"/>
             <zipfileset src="${w}/razweb/lib/mime-util.jar"/>
+            <zipfileset src="${w}/razxml/dist/razxml.jar"/>
         </jar>
 
     </target>

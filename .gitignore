@@ -1,3 +1,4 @@
 bin
 .scala_dependencies
 dist
+timestamp.txt
