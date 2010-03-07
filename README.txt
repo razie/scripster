@@ -25,3 +25,39 @@ May add some more scripting languages in the future but otherwise I don't think 
 
 It may also get nicer.
 
+Developing & Building
+---------------------
+
+These projects are setup as eclipse projects and also have ant build.xml files.
+
+Here's how to build it:
+
+1. Setup ant and scala
+2. Make a workspace directory ${w}
+3. checkout the following projects
+
+   cd ${w}
+   git clone git@github.com:razie/razbase.git
+   git clone git@github.com:razie/razxml.git
+   git clone git@github.com:razie/20widgets.git
+   git clone git@github.com:razie/20widgets-swing.git
+   git clone git@github.com:razie/razweb.git
+   git clone git@github.com:razie/scripster.git
+
+4. edit ${w}/razbase/razie.properties and set the w property to the workspace
+
+5. build all and create the dist jar file:
+
+   cd ${w}/scripster
+   ant clean-all build-all dist
+
+6. If you're having problems with out of memory, you have to build each:
+
+   for ff in "razbase 20widgets 20widgets-swing razweb scripster"
+   do
+      ant -f $f/build.xml clean build jar-only
+   done
+   ant -f scripster/build.xml dist
+
+Good luck!
+
