@@ -10,6 +10,8 @@ What's this?
 ------------
 Interactive scripting pad for scala. It is available over telnet, http and swing.
 
+Read the guide at http://wiki.homecloud.ca/scripster
+
 Why?
 ----
 So anyone can interact with a running application, having access to all the application's objects. Obviously, we don't want 'anyone' to have this kind of access, so you will no doubt take steps to protect this.
