@@ -1,7 +1,7 @@
-/**  ____    __    ____  ____  ____/___     ____  __  __  ____
- *  (  _ \  /__\  (_   )(_  _)( ___) __)   (  _ \(  )(  )(  _ \           Read
- *   )   / /(__)\  / /_  _)(_  )__)\__ \    )___/ )(__)(  ) _ <     README.txt
- *  (_)\_)(__)(__)(____)(____)(____)___/   (__)  (______)(____/   LICENESE.txt
+/**  ____    __    ____  ____  ____,,___     ____  __  __  ____
+ *  (  _ \  /__\  (_   )(_  _)( ___)/ __)   (  _ \(  )(  )(  _ \           Read
+ *   )   / /(__)\  / /_  _)(_  )__) \__ \    )___/ )(__)(  ) _ <     README.txt
+ *  (_)\_)(__)(__)(____)(____)(____)(___/   (__)  (______)(____/    LICENSE.txt
  */
 package razie.base.scripting
 
@@ -12,7 +12,6 @@ import scala.tools.nsc.{ InterpreterResults => IR }
 class ScalaScriptContext (parent:ScriptContext = null) extends ScriptContextImpl (parent) {
    val env = new nsc.Settings (err)
    val p = new RaziesInterpreter (env)         
-//   val p = new nsc.Interpreter (env)         
    
    lazy val c = {
       // not just create, but prime this ... first time it doesn't work...
@@ -38,12 +37,13 @@ class ScalaScriptContext (parent:ScriptContext = null) extends ScriptContextImpl
    var expr : Boolean = true // I'm in expression mode versus interpret mode
 }
 
+// statics
 object SS {
   def bind (ctx:ScriptContext, p:nsc.Interpreter) {
-    if (ctx.isInstanceOf[ScalaScriptContext])
-       p.bind ("ctx", classOf[ScalaScriptContext].getCanonicalName, ctx)
-    else
-       p.bind ("ctx", classOf[ScriptContext].getCanonicalName, ctx)
+    p.bind ("ctx", ctx.getClass.getCanonicalName, ctx)
+    if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].getParent != null)
+       p.bind ("parent", ctx.asInstanceOf[ScriptContextImpl].getParent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].getParent)
+
     val iter = ctx.getPopulatedAttr().iterator
     while (iter.hasNext) {
       val key = iter.next
@@ -64,7 +64,7 @@ class ScriptScala (val script:String) extends RazScript {
      * 
      * @param c the context for the script
      */
-   override def eval(ctx:ScriptContext) : AnyRef = {
+   override def eval(ctx:ScriptContext) : RazScript.RSResult = {
       var result:AnyRef = "";
 
       val sctx : Option[ScalaScriptContext] = 
@@ -88,15 +88,16 @@ class ScriptScala (val script:String) extends RazScript {
             result = if (r==null) "" else r.toString
 
             // TODO put back all variables
+           RazScript.RSSucc(result)
         } catch {
           case e:Exception => {
             razie.Log ("While processing script: " + this.script, e)
-            result = "ERROR: " + e.getMessage + " : " + ctx.asInstanceOf[ScalaScriptContext].lastError
-            ctx.asInstanceOf[ScalaScriptContext].lastError = ""
+            val r = "ERROR: " + e.getMessage + " : " + 
+                     (sctx.map (_.lastError) getOrElse "Unknown")
+            sctx.map (_.lastError = "")
+            RazScript.RSError(r)
           }
         }
-    
-        result;
     }
    
     /**
@@ -104,7 +105,7 @@ class ScriptScala (val script:String) extends RazScript {
      * 
      * @param c the context for the script
      */
-   def interactive(ctx:ScriptContext) : RazScript.SResult = {
+   def interactive(ctx:ScriptContext) : RazScript.RSResult = {
       val sctx : Option[ScalaScriptContext] = 
        if (ctx.isInstanceOf[ScalaScriptContext])
          Some(ctx.asInstanceOf[ScalaScriptContext])
@@ -126,24 +127,27 @@ class ScriptScala (val script:String) extends RazScript {
           }
         }
     }
+   
+   def compile(ctx:ScriptContext) : RazScript.RSResult = RazScript.RSUnsupported
 }
 
+/** hacking the scala interpreter */
 class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
   
-  def eval (s:ScriptScala, ctx:ScriptContext) : RazScript.SResult = {
+  def eval (s:ScriptScala, ctx:ScriptContext) : RazScript.RSResult = {
     beQuietDuring {
       interpret(s.script) match {
         case IR.Success => 
           if (razLastReq.extractionValue.isDefined) 
-             RazScript.SSucc (razLastReq.extractionValue get)
+             RazScript.RSSucc (razLastReq.extractionValue get)
           else
-             RazScript.SSuccNoValue
+             RazScript.RSSuccNoValue
         case IR.Error => {
-           val c = RazScript.SError (razLastReq.err mkString "\n\r")
+           val c = RazScript.RSError (razLastReq.err mkString "\n\r")
            razAccerr.clear
            c
         }
-        case IR.Incomplete => RazScript.SIncomplete
+        case IR.Incomplete => RazScript.RSIncomplete
      }
     }
   }
@@ -153,11 +157,11 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
 object ScriptScalaTestApp extends Application{
     var script = "val y = 3; def f(x:int)={x+1}; val res=f(7); res";
     var js = new ScriptScala(script);
-    System.out.println(js.eval(new ScriptContextImpl()));
+    System.out.println(js.eval(ScriptFactory.mkContext()));
 
     script = "TimeOfDay.value()";
     js = new ScriptScala(script);
-    var ctx = new ScriptContextImpl();
+    var ctx = ScriptFactory.mkContext();
     ctx.setAttr("TimeOfDay", new TimeOfDay(), null);
     System.out.println(js.eval(ctx));
 }

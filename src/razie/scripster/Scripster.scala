@@ -1,7 +1,7 @@
-/**  ____    __    ____  ____  ____/___     ____  __  __  ____
- *  (  _ \  /__\  (_   )(_  _)( ___) __)   (  _ \(  )(  )(  _ \           Read
- *   )   / /(__)\  / /_  _)(_  )__)\__ \    )___/ )(__)(  ) _ <     README.txt
- *  (_)\_)(__)(__)(____)(____)(____)___/   (__)  (______)(____/   LICENESE.txt
+/**  ____    __    ____  ____  ____,,___     ____  __  __  ____
+ *  (  _ \  /__\  (_   )(_  _)( ___)/ __)   (  _ \(  )(  )(  _ \           Read
+ *   )   / /(__)\  / /_  _)(_  )__) \__ \    )___/ )(__)(  ) _ <     README.txt
+ *  (_)\_)(__)(__)(____)(____)(____)(___/   (__)  (______)(____/    LICENSE.txt
  */
 package razie.scripster
 
@@ -19,18 +19,40 @@ import razie.base.scripting._
 /** 
  * a door to the REPL
  * 
- * Usage: it works with a LightServer (see project razweb). You can {@link #attachTo} to an existing server or {@link create} a new, dedicated one.
+ * Usage: it works with a LightServer (see project razweb). You can 
+ * {@link #attachTo} to an existing server or {@link create} a new, dedicated one.
  * 
  * If all you need in an app is the scripster, create one on a port of your choice, with no extra services.
  * 
  * To customize interaction, you can mess with the Repl - that's the actual interaction with the REPL
  * 
+ * Further customization options below.
+ * 
+ * To limit the objects available to clients, please reset the sharedContext:
+ * <code>
+ * val myContext = ScriptFactory.mkContext(null) // null means no parent for this one
+ * myContext.put ("obj1", obj1)
+ * ... // add more objects 
+ * Scripster.sharedContext = myContext
+ * </code>
+ * 
+ * NOTE that this is truly a shared context, shared across sessions. Changing the state of objects 
+ * here will be shared.
+ * 
+ * However, each individual session gets its own context, so new objects created in one session are not
+ * visible to others.
+ * 
  * @author razvanc99
  */
 object Scripster {
 
+   // set this to limit the objects to use...
+   var sharedContext = ScriptContextImpl.global
+   
    // hook to the web/telnet server
-   var contents : CS = null
+   private var contents : CS = null
+   
+   ScriptFactory.init (new ScriptFactoryScala (ScriptFactory.singleton, true))
 
    /** use this to attach the REPL to an existing server */
    def attachTo (ls:LightServer) = {
@@ -62,48 +84,53 @@ object Scripster {
          case None => server.run()
       }
    }
-}
 
-/** actual interaction with the REPL */
-object Repl {
-   ScriptFactory.init (new ScriptFactoryScala (null, true))
-   
-   def exec (lang:String, script:String, session:ScriptSession) : AnyRef = {
+   /** session-based execution 
+    * 
+    * @return (complex code with info , just null or value) 
+    */
+   def exec (lang:String, script:String, sessionId:String) : (RazScript.RSResult, AnyRef) = {
+     val ret = Sessions.get (sessionId).map (session=> {
      session accumulate script
      
      val s = ScriptFactory.make ("scala", session.script)
      razie.Log ("execute script=" + session.script)
      
      s.interactive(session.ctx) match {
-       case RazScript.SSucc(res) => {
+       case s1@RazScript.RSSucc(res) => {
           session.clear
-          res.asInstanceOf[AnyRef]
+          (s1, res.asInstanceOf[AnyRef])
        }
-       case RazScript.SSuccNoValue => {
+       case s2@RazScript.RSSuccNoValue => {
           session.clear
-          null
+          (s2, null)
        }
-       case RazScript.SError(err) => {
+       case s3@RazScript.RSError(err) => {
           razie.Debug ("SError...: "+err)
           session.clear
-          err
+          (s3, err)
        }
-       case RazScript.SIncomplete => {
+       case s4@RazScript.RSIncomplete => {
           razie.Debug ("SIncomplete...accumulating: "+script)
-          null
+          (s4, null)
        }
-       case RazScript.SIUnsupported => {
+       case s5@RazScript.RSUnsupported => {
           // do the accumulation ourselves
          if (! session.inStatement) {
            val s = ScriptFactory.make ("scala", session.script)
            razie.Log ("execute script=" + session.script)
            session.clear
-           s.eval(session.ctx)
+           val ret = s.eval(session.ctx)
+           (ret, ret)
           }
          else 
-            null
+            (s5, null)
        }
      }
+     }
+     ).getOrElse((RazScript.RSError("No session found id="+sessionId), "No session found id="+sessionId))
+     razie.Log ("result=" + ret)
+     ret
    }
    
   def options (sessionId:String, line:String) = {

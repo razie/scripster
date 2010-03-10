@@ -1,7 +1,7 @@
-/**  ____    __    ____  ____  ____/___     ____  __  __  ____
- *  (  _ \  /__\  (_   )(_  _)( ___) __)   (  _ \(  )(  )(  _ \           Read
- *   )   / /(__)\  / /_  _)(_  )__)\__ \    )___/ )(__)(  ) _ <     README.txt
- *  (_)\_)(__)(__)(____)(____)(____)___/   (__)  (______)(____/   LICENESE.txt
+/**  ____    __    ____  ____  ____,,___     ____  __  __  ____
+ *  (  _ \  /__\  (_   )(_  _)( ___)/ __)   (  _ \(  )(  )(  _ \           Read
+ *   )   / /(__)\  / /_  _)(_  )__) \__ \    )___/ )(__)(  ) _ <     README.txt
+ *  (_)\_)(__)(__)(____)(____)(____)(___/   (__)  (______)(____/    LICENSE.txt
  */
 package razie.scripster
 
@@ -24,23 +24,22 @@ class CS (proxy:LightContentServer) extends LightContentServer {
       proxy.dflt = new SH()
    
    override def options (s:String, sessionId:String) : Seq[ActionItem] = {
-      Repl.options(sessionId, s)
+      Scripster.options(sessionId, s)
    }
    
    override def exec(cmdLine:String, protocol:String, parms:java.util.Properties, socket:MyServerSocket, httpattrs:AttrAccess) : AnyRef = 
       proxy.exec (cmdLine, protocol, parms, socket, httpattrs)
       
-   override def mkSession (): String = Sessions.create.id 
+   override def mkSession (): String = Sessions.create(Scripster.sharedContext).id 
 }
 
+/** default command handler - runs the entire line as a script */
 class SH extends SocketCmdHandler {
 
    override def execServer(cmd:String , protocol:String , args:String , parms:java.util.Properties ,
                 socket:MyServerSocket ) : AnyRef = {
      val script = if (args != null && args.length > 0) cmd + " " + args else cmd
-     val sessionId = parms.getProperty("sessionId")
-     Sessions.get (sessionId).map (session=>
-           Repl.exec ("scala", script, session)).getOrElse("No session found id="+sessionId)
+     Scripster.exec ("scala", script, parms.getProperty("sessionId"))._2 
      }
 
    override def getSupportedActions() = Array[String]()
@@ -49,27 +48,38 @@ class SH extends SocketCmdHandler {
 @SoaService (name="scripting", descr="scripging service", bindings=Array("http"))
 object ScriptService {
    val cmdRSCRIPT = razie.AI ("run")
+   val cmdRESET = razie.AI ("reset")
    
   @SoaMethod (descr="interactive", args=Array("sessionId", "line"))
   def options (sessionId:String, line:String) = 
-    Repl.options(sessionId, line)
+    "[" + soptions(sessionId)(line).mkString (",") + "]"
   
   @SoaMethod (descr="exec a script", args=Array("sessionId", "language", "script"))
   def run (sessionId:String, language:String, script:String) = {
-     Sessions.get (sessionId).map (session=>
-           Repl.exec (language, script, session)).getOrElse("No session found id="+sessionId)
+    Scripster.exec (language, script, sessionId)._2
   }
   
   @SoaMethod (descr="exec a script", args=Array("lang"))
   def session (lang:String) = {
-     val c = Sessions.create
-     new razie.draw.widgets.ScriptPad (mkATI(c.id) _)
+     val c = Sessions create Scripster.sharedContext 
+     new razie.draw.widgets.ScriptPad (mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _)
   }
 
   @SoaMethod (descr="exec a script", args=Array("lang"))
   def simpleSession (lang:String) = {
-     val c = Sessions.create
-     new razie.draw.widgets.ScriptPad (run=mkATI(c.id) _, simple=true)
+     val c = Sessions create Scripster.sharedContext 
+     new razie.draw.widgets.ScriptPad (run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, simple=true)
+  }
+
+  @SoaMethod (descr="exec a script", args=Array("lang"))
+  def appletSession (lang:String) = {
+     val c = Sessions create Scripster.sharedContext 
+     new razie.draw.widgets.ScriptPad (run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, applet=true)
+  }
+
+  @SoaMethod (descr="exec a script", args=Array("sessionId"))
+  def reset (sessionId:String) = {
+     Sessions.get(sessionId).map(_.clear)
   }
 
   def mkATI (sessionId:String)() : ActionToInvoke = {
@@ -79,6 +89,18 @@ object ScriptService {
        }
     }
   }
+  
+  def mkRESET (sessionId:String)() : ActionToInvoke = {
+    new ServiceActionToInvoke("scripting", cmdRESET, "sessionId", sessionId) {
+       override def act (ctx:ActionContext) : AnyRef = {
+          reset (sa("sessionId"))
+       }
+    }
+  }
+  
+  private def soptions (sessionId:String)(s:String) : Seq[String] = {
+    Scripster.options(sessionId, s).map (_.name)
+  }
 
 }
 
@@ -86,30 +108,30 @@ object Sessions {
   val life = 30 * 60 * 60 * 1000 // 30 minutes
   val map = razie.Mapi[String, ScriptSession] ()
   
-  def create = { 
-     clean
-     val c = new ScriptSession()
-     map.put(c.id, c)
-     c 
-     }
+  def create (parent:ScriptContext) = { 
+    clean
+    val c = new ScriptSession(parent)
+    map.put(c.id, c)
+    c 
+  }
   
   def get (key:String) = {
-     clean
-     map.get(key)
+    clean
+    map.get(key)
   }
   
   def clean { 
-     val time = System.currentTimeMillis
-     val oldies = map.values.filter(_.time < time-life).toList
-     oldies.foreach(x=>map.remove(x.id))
+    val time = System.currentTimeMillis
+    val oldies = map.values.filter(_.time < time-life).toList
+    oldies.foreach(x=>map.remove(x.id))
   }
 }
 
 // Sessions of scripting - maintain state
-class ScriptSession {
+class ScriptSession (parent:ScriptContext) {
   val time = System.currentTimeMillis
   val id = time.toString // TODO use GUID
-  val ctx = new ScalaScriptContext(ScriptContextImpl.global)
+  val ctx = new ScalaScriptContext(parent)
   var buffer = new StringBuilder()
   var pcount = 0
 
