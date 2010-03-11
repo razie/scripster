@@ -68,6 +68,12 @@ object Scripster {
       // stuff to set before you start the server
       HtmlRenderUtils.setTheme(new HtmlRenderUtils.DarkTheme());
       NoStatics.put(classOf[Agents], new Agents(new AgentCloud(ME), ME));
+      
+      LightAuth.underLockAndKey {
+        LightAuth.init
+      // allow everybody...
+        LightAuth.ipMatches (".*", LightAuthType.INCLOUD)
+      }
 
       val server = new LightServer (port, 20, ExecutionContext.instance(), new LightContentServer()) 
       val get = new MyServer()

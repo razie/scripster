@@ -88,6 +88,7 @@
             <zipfileset src="${w}/razbase/lib/json.jar"/>
             <zipfileset src="${w}/razweb/lib/mime-util.jar"/>
             <zipfileset src="${w}/razxml/dist/razxml.jar"/>
+            <zipfileset src="${w}/20widgets-swing/lib/jsyntaxpane-0.9.5-b29.jar"/>
         </jar>
 
     </target>
