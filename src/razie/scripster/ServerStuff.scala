@@ -127,21 +127,45 @@ object ScripsterService {
 
 }
 
-/** simple session manager - sessions expire in 30 minutes */
+/** simple session manager - sessions expire in 7 minutes */
 object Sessions {
-  val life = 30 * 60 * 60 * 1000 // 30 minutes
+  val life = intprop("scripster.sessions.life", 3 * 60) * 1000L // 2 minutes
+  val max = intprop("scripster.sessions.max", 12) // 2 minutes
   val map = razie.Mapi[String, ScriptSession] ()
-  
+
+  def intprop (prop:String, dflt:Int) : Int = {
+     val s = System.getProperty(prop)
+     
+     try {
+        Integer.parseInt(s)
+     } catch {
+        case e:Throwable => dflt
+     }
+  }
+
   def create (parent:ScriptContext) = { 
     clean
+
+    if (map.size >= max) {
+    val now = System.currentTimeMillis
+//    val s1=(map.values.map(_.time).foldRight(now)((x,y)=>if (x<y)x else y))
+//    val s2=(now-s1)
+//    val s3=(life-(s2))
+//    val s4=s3/(1000L)
+       error ("too many sessions - come back...later, sessions=" + map.size + 
+              "  - patience, one expires in: " + (life-(now-(map.values.map(_.time).foldRight(now)((x,y)=>if (x<y)x else y))))/(1000L) + "sec" )
+    }
+       
     val c = new ScriptSession(parent)
     map.put(c.id, c)
     c 
   }
   
   def get (key:String) = {
-    clean
-    map.get(key)
+//    clean
+    val c = map.get(key)
+    c.foreach(_.time = System.currentTimeMillis) // reset last access
+    c
   }
   
   def clean { 
@@ -153,7 +177,7 @@ object Sessions {
 
 /** Sessions of scripting - maintain state */
 class ScriptSession (parent:ScriptContext) {
-  val time = System.currentTimeMillis
+  var time = System.currentTimeMillis
   val id = time.toString // TODO use GUID
   val ctx = new ScalaScriptContext(parent)
   var buffer = new StringBuilder()
