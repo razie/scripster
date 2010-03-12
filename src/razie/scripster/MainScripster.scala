@@ -25,5 +25,5 @@ object MainScripster extends Application {
                }}
          ).start
    
-   Scripster.create(4445, None)
+   Scripster.createServer(4445)
 }

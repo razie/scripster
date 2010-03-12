@@ -1,0 +1,28 @@
+
+// Standard extensions get all permissions by default
+grant codeBase "file:{user.home}/w/scripster/dist/*.jar" {
+        permission java.security.AllPermission;
+};
+grant codeBase "file:{user.home}/w/scripster/lib/*.jar" {
+        permission java.security.AllPermission;
+};
+
+grant {
+
+  permission java.io.FilePermission "<<ALL FILES>>", "read";
+
+  permission java.net.NetPermission "setDefaultAuthenticator";
+  permission java.net.NetPermission "requestPasswordAuthentication";
+
+  permission java.util.PropertyPermission "*", "read, write";
+
+  permission java.net.SocketPermission "*:1024-", "listen, accept, resolve";
+
+//  permission java.lang.reflect.ReflectPermission "*";
+
+//  permission java.lang.RuntimePermission "*";
+
+
+};
+
+

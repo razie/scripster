@@ -25,22 +25,26 @@ import razie.Draw
 object MainSwingScripster extends SimpleSwingApplication {
 
   def top = new MainFrame {
-     
+    
+     // warm up the scala compiler
    new java.lang.Thread ( 
          new java.lang.Runnable { 
             def run() { 
                new ScriptScala ("1+2").eval(ScriptContextImpl.global) 
                }}
          ).start
-   
+
+         // start the web server version in a separate thread to speed up 
    new java.lang.Thread ( 
          new java.lang.Runnable { 
             def run() { 
-               Scripster.create(4445, None)
+               Scripster.createServer(4445)
                }}
          ).start
    
-     
+
+         // draw a swing painting
+         
     razie.draw.swing.Init.init
      
     title = "SCRIPSTER - Razie's ScriptPad"
@@ -49,9 +53,10 @@ object MainSwingScripster extends SimpleSwingApplication {
       def add (c:Component) { contents += c }
     }
 
+   // can draw swing gadgets anywhere components can be added...
     val stream = new SwingDrawStream ({ c:Component => panel.add(c) })
     
-    stream write ScriptService.session ("scala")
+    stream write ScripsterService.pad ("scala")
     
     contents = panel
     

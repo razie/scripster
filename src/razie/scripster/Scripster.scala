@@ -60,32 +60,42 @@ object Scripster {
       ls.contents = contents
    }
   
-   /** create a new server on the specified port and start it on the thread */
-   def create (port:Int, t:Option[(Runnable) => Thread], services:Seq[HttpSoaBinding] = Nil) {
+   /** create a new server on the specified port and start it on the thread 
+    * 
+    * @param port the port number to start the embedded server at
+    * @param runner - if provided will be used to ru nthe server, otherwise new thread is spawned
+    * @param services - extra services to be added to the embedded server
+    */
+   def createServer (port:Int, runner:Option[(Runnable) => Thread]=None, services:Seq[HttpSoaBinding] = Nil) {
       val ME = new AgentHandle("localhost", "localhost", "127.0.0.1", port
          .toString(), "http://localhost:" + port.toString());
       
       // stuff to set before you start the server
       HtmlRenderUtils.setTheme(new HtmlRenderUtils.DarkTheme());
       NoStatics.put(classOf[Agents], new Agents(new AgentCloud(ME), ME));
-      
+     
+      // default auth is configuration-based. 
+      // let's allow everyone, instead
       LightAuth.underLockAndKey {
         LightAuth.init
-      // allow everybody...
         LightAuth.ipMatches (".*", LightAuthType.INCLOUD)
       }
 
+      // start the web server with the default content server
       val server = new LightServer (port, 20, ExecutionContext.instance(), new LightContentServer()) 
-      val get = new MyServer()
+      
+      // add some handlers
+      val get = new SimpleGetHandler()
       server.registerHandler(get)
       server.registerHandler(new LightCmdPOST(get))
 
+      get.registerSoa(new HttpSoaBinding(ScripsterService))
       get.registerSoa(new HttpSoaBinding(ScriptService))
       services.foreach (get.registerSoa(_))
    
       attachTo(server)
   
-      t match {
+      runner match {
          case Some(mk) => mk (server).start()
          case None => server.run()
       }

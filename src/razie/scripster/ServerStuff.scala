@@ -45,8 +45,20 @@ class SH extends SocketCmdHandler {
    override def getSupportedActions() = Array[String]()
 }
 
+/** @deprecated */
 @SoaService (name="scripting", descr="scripging service", bindings=Array("http"))
 object ScriptService {
+  // intercept all possible calls to this service and redirect
+  @SoaMethod (descr="interactive") // need this
+  @SoaMethodSink // sink all calls
+  @SoaAllParms // accept any parm
+  def deprecated (parms:AttrAccess) = 
+     razie.Draw html "DEPRECATED. please use /scripster/... instead of /scripting/... <a href=\"/scripster/session\">like so</a>"
+}
+
+/** the main scripster service (aka serlvet) */
+@SoaService (name="scripster", descr="scripging service", bindings=Array("http"))
+object ScripsterService {
    val cmdRSCRIPT = razie.AI ("run")
    val cmdRESET = razie.AI ("reset")
    
@@ -59,10 +71,21 @@ object ScriptService {
     Scripster.exec (language, script, sessionId)._2
   }
   
+  @SoaMethod (descr="create a new session and a simple pad", args=Array("lang"))
+  def pad (lang:String) = {
+    val c = Sessions create Scripster.sharedContext 
+    new razie.draw.widgets.ScriptPad (mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _)
+  }
+
   @SoaMethod (descr="exec a script", args=Array("lang"))
   def session (lang:String) = {
-     val c = Sessions create Scripster.sharedContext 
-     new razie.draw.widgets.ScriptPad (mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _)
+    val notice = Comms.readStream (this.getClass().getResource("/public/scripster.html").openStream)
+    val title = razie.Draw html "<b> Scripster - interactive scala scripting</b>"
+    
+    if (notice != null && notice.length > 0 ) 
+       razie.Draw seq ( title, pad(lang), razie.Draw html "<p><b>Notice</b>", razie.Draw htmlMemo notice)
+    else 
+       razie.Draw seq (title, pad(lang))
   }
 
   @SoaMethod (descr="exec a script", args=Array("lang"))
@@ -104,6 +127,7 @@ object ScriptService {
 
 }
 
+/** simple session manager - sessions expire in 30 minutes */
 object Sessions {
   val life = 30 * 60 * 60 * 1000 // 30 minutes
   val map = razie.Mapi[String, ScriptSession] ()
@@ -127,7 +151,7 @@ object Sessions {
   }
 }
 
-// Sessions of scripting - maintain state
+/** Sessions of scripting - maintain state */
 class ScriptSession (parent:ScriptContext) {
   val time = System.currentTimeMillis
   val id = time.toString // TODO use GUID
@@ -157,7 +181,10 @@ class ScriptSession (parent:ScriptContext) {
   def clear { pcount = 0; buffer = new StringBuilder() }
 }
 
-class MyServer extends SimpleClasspathServer ("") {
+/**  
+ * allow services to be called without a prefix. http://localhost:1234/service/method... 
+ */
+class SimpleGetHandler extends SimpleClasspathServer ("") {
    import scala.collection.JavaConversions._
         val pat = """/([^/]*).*""".r
    
