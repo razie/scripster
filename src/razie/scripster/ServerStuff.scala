@@ -64,7 +64,7 @@ object ScripsterService {
    
   @SoaMethod (descr="interactive", args=Array("sessionId", "line"))
   def options (sessionId:String, line:String) = 
-    "[" + soptions(sessionId)(line).mkString (",") + "]"
+    razie.Draw.html("[" + soptions(sessionId)(line).map ("\""+_+"\"").mkString (",") + "]")
   
   @SoaMethod (descr="exec a script", args=Array("sessionId", "language", "script"))
   def run (sessionId:String, language:String, script:String) = {
