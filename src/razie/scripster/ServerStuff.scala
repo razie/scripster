@@ -210,15 +210,15 @@ class ScriptSession (parent:ScriptContext) {
  */
 class SimpleGetHandler extends SimpleClasspathServer ("") {
    import scala.collection.JavaConversions._
-        val pat = """/([^/]*).*""".r
+        val pat = """([^/]*).*""".r
    
   override def findSoaToCall(socket:MyServerSocket , path:String , parms:java.util.Properties ):String = {
-     if (path != "/" && path != "") {
+     if (path != "") {
         val pat (svc) = path
         
         if (getBindings().filter(_.getServiceName().equals(svc)).isEmpty)
            null
-        else path.replaceFirst("/", "")
+        else path
      }
      else null
     }
