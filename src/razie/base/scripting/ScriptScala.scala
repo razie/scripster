@@ -41,8 +41,8 @@ class ScalaScriptContext (parent:ScriptContext = null) extends ScriptContextImpl
 object SS {
   def bind (ctx:ScriptContext, p:nsc.Interpreter) {
     p.bind ("ctx", ctx.getClass.getCanonicalName, ctx)
-    if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].getParent != null)
-       p.bind ("parent", ctx.asInstanceOf[ScriptContextImpl].getParent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].getParent)
+    if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].parent != null)
+       p.bind ("parent", ctx.asInstanceOf[ScriptContextImpl].parent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].parent)
 
     val iter = ctx.getPopulatedAttr().iterator
     while (iter.hasNext) {
@@ -64,7 +64,7 @@ class ScriptScala (val script:String) extends RazScript {
      * 
      * @param c the context for the script
      */
-   override def eval(ctx:ScriptContext) : RazScript.RSResult = {
+   override def eval(ctx:ScriptContext) : RazScript.RSResult[Any] = {
       var result:AnyRef = "";
 
       val sctx : Option[ScalaScriptContext] = 
@@ -105,7 +105,7 @@ class ScriptScala (val script:String) extends RazScript {
      * 
      * @param c the context for the script
      */
-   def interactive(ctx:ScriptContext) : RazScript.RSResult = {
+   def interactive(ctx:ScriptContext) : RazScript.RSResult[Any] = {
       val sctx : Option[ScalaScriptContext] = 
        if (ctx.isInstanceOf[ScalaScriptContext])
          Some(ctx.asInstanceOf[ScalaScriptContext])
@@ -128,13 +128,13 @@ class ScriptScala (val script:String) extends RazScript {
         }
     }
    
-   def compile(ctx:ScriptContext) : RazScript.RSResult = RazScript.RSUnsupported
+   def compile(ctx:ScriptContext) : RazScript.RSResult[Any] = RazScript.RSUnsupported
 }
 
 /** hacking the scala interpreter */
 class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
   
-  def eval (s:ScriptScala, ctx:ScriptContext) : RazScript.RSResult = {
+  def eval (s:ScriptScala, ctx:ScriptContext) : RazScript.RSResult[Any] = {
     beQuietDuring {
       interpret(s.script) match {
         case IR.Success => 
@@ -155,7 +155,7 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
 
 /** a test app */
 object ScriptScalaTestApp extends Application{
-    var script = "val y = 3; def f(x:int)={x+1}; val res=f(7); res";
+    var script = "val y = 3; def f(x:Int)={x+1}; val res=f(7); res";
     var js = new ScriptScala(script);
     System.out.println(js.eval(ScriptFactory.mkContext()));
 
@@ -164,4 +164,6 @@ object ScriptScalaTestApp extends Application{
     var ctx = ScriptFactory.mkContext();
     ctx.setAttr("TimeOfDay", new TimeOfDay(), null);
     System.out.println(js.eval(ctx));
+    
+    js.eval(ctx).map(println (_))
 }

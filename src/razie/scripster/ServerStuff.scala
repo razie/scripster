@@ -14,6 +14,7 @@ import com.razie.pub.http.sample._
 import com.razie.pub.http.LightContentServer
 import com.razie.pub.base.ExecutionContext
 import razie.base._
+import razie.Draw
 import razie.base.scripting._
 
 /** a demo content server implementation */
@@ -68,36 +69,53 @@ object ScripsterService {
   
   @SoaMethod (descr="exec a script", args=Array("sessionId", "language", "script"))
   def run (sessionId:String, language:String, script:String) = {
-    Scripster.exec (language, script, sessionId)._2
+    val ret = Scripster.exec (language, script, sessionId)
+    ret._1 match {
+       case s1@RazScript.RSSucc(res) => Draw toString res.toString
+       case s2@RazScript.RSSuccNoValue => Draw toString "Scripster.Status:...ok"
+       case s3@RazScript.RSError(err) => Draw toString "Error: " + err
+       case s4@RazScript.RSIncomplete => Draw toString "Scripster.Status:...incomplete"
+       case _ => Draw text "Scripster.Status:??? the interpreter said what ???"
+     }
   }
   
   @SoaMethod (descr="create a new session and a simple pad", args=Array("lang"))
   def pad (lang:String) = {
     val c = Sessions create Scripster.sharedContext 
-    new razie.draw.widgets.ScriptPad (mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _)
+    new razie.draw.widgets.ScriptPad (lang=lang, run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _)
   }
 
+  def j(lang:String, ok:String, k:String, ak:String) = "','"+lang+"', '"+ok+"', '"+k+"', '"+ak+"')"
+
   @SoaMethod (descr="exec a script", args=Array("lang"))
-  def session (lang:String) = {
+  @SoaMethodSink
+  def session (ilang:String) = {
     val notice = Comms.readStream (this.getClass().getResource("/public/scripster.html").openStream)
-    val title = razie.Draw html "<b> Scripster - interactive scala scripting</b>"
+    val title = razie.Draw html "<b> Scripster - interactive scala script pad</b>"
+
+    val lang = Option(ilang) getOrElse "scala"
     
+    val p = pad(lang)
+    p.moreButtons = 
+      Draw.button(razie.AI("Witty"),   "javascript:scripsterJump('http://codewitter.com/cw/start?from=scripster"+j(lang,"", "", "")) :: Nil 
+//      Draw.button(razie.AI("Witty"),   "javascript:scripsterJump('/cw/start?from=scripster"+j(lang,"", "", "")) :: Nil 
+
     if (notice != null && notice.length > 0 ) 
-       razie.Draw seq ( title, pad(lang), razie.Draw html "<p><b>Notice</b>", razie.Draw htmlMemo notice)
+       razie.Draw seq ( title, p, razie.Draw html "<p><b>Notice</b>", razie.Draw htmlMemo notice)
     else 
-       razie.Draw seq (title, pad(lang))
+       razie.Draw seq (title, p)
   }
 
   @SoaMethod (descr="exec a script", args=Array("lang"))
   def simpleSession (lang:String) = {
      val c = Sessions create Scripster.sharedContext 
-     new razie.draw.widgets.ScriptPad (run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, simple=true)
+     new razie.draw.widgets.ScriptPad (lang=lang, run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, simple=true)
   }
 
   @SoaMethod (descr="exec a script", args=Array("lang"))
   def appletSession (lang:String) = {
      val c = Sessions create Scripster.sharedContext 
-     new razie.draw.widgets.ScriptPad (run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, applet=true)
+     new razie.draw.widgets.ScriptPad (lang=lang, run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, applet=true)
   }
 
   @SoaMethod (descr="exec a script", args=Array("sessionId"))
@@ -148,10 +166,6 @@ object Sessions {
 
     if (map.size >= max) {
     val now = System.currentTimeMillis
-//    val s1=(map.values.map(_.time).foldRight(now)((x,y)=>if (x<y)x else y))
-//    val s2=(now-s1)
-//    val s3=(life-(s2))
-//    val s4=s3/(1000L)
        error ("too many sessions - come back...later, sessions=" + map.size + 
               "  - patience, one expires in: " + (life-(now-(map.values.map(_.time).foldRight(now)((x,y)=>if (x<y)x else y))))/(1000L) + "sec" )
     }
@@ -162,7 +176,6 @@ object Sessions {
   }
   
   def get (key:String) = {
-//    clean
     val c = map.get(key)
     c.foreach(_.time = System.currentTimeMillis) // reset last access
     c

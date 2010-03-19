@@ -9,14 +9,16 @@
 This code is provided AS IS. No warranties implied nor any liabilities assumed. 
 Use at your own risk! 
 
-All code and resources in this project is copyrighted by Razvan Cojocaru, under 
-the Creative Commons Attribution 3.0 Unported License, 
+All code and resources in this project is copyrighted by Razvan Cojocaru, 
+with the exception mentioned below, under the 
+Creative Commons Attribution 3.0 Unported License, 
 available at http://creativecommons.org/licenses/by/3.0/.
 
-If you don't know what the above means, you're not allowed to use, view, 
-see or otherwise be near this! Get an brain!
+The exception to the Creative Commons is that you cannot use the code in this project to offer
+services, to the public, that directly compete with specific "scripster" services offered by 
+http://scripster.razie.com .
 
 
 -----------
 
-This package includes software from http://code.google.com/p/jsyntaxpane/
+The scriptpad includes software from http://code.google.com/p/jsyntaxpane/

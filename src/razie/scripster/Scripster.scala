@@ -45,7 +45,6 @@ import razie.base.scripting._
  * @author razvanc99
  */
 object Scripster {
-
    // set this to limit the objects to use...
    var sharedContext = ScriptContextImpl.global
    
@@ -89,8 +88,11 @@ object Scripster {
       server.registerHandler(get)
       server.registerHandler(new LightCmdPOST(get))
 
-      get.registerSoa(new HttpSoaBinding(ScripsterService))
-      get.registerSoa(new HttpSoaBinding(ScriptService))
+      if (System.getProperty("scripsterpro.run", "true").equals("true")) {
+        get.registerSoa(new HttpSoaBinding(ScripsterService))
+        get.registerSoa(new HttpSoaBinding(ScriptService))
+      }
+      
       services.foreach (get.registerSoa(_))
    
       attachTo(server)
@@ -105,7 +107,7 @@ object Scripster {
     * 
     * @return (complex code with info , just null or value) 
     */
-   def exec (lang:String, script:String, sessionId:String) : (RazScript.RSResult, AnyRef) = {
+   def exec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
      val ret = Sessions.get (sessionId).map (session=> {
      session accumulate script
      
