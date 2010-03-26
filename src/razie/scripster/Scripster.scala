@@ -76,7 +76,7 @@ object Scripster {
       // default auth is configuration-based. 
       // let's allow everyone, instead
       LightAuth.underLockAndKey {
-        LightAuth.init
+        LightAuth.init()
         LightAuth.ipMatches (".*", LightAuthType.INCLOUD)
       }
 
@@ -111,8 +111,9 @@ object Scripster {
      val ret = Sessions.get (sessionId).map (session=> {
      session accumulate script
      
-     val s = ScriptFactory.make ("scala", session.script)
+     val s = ScriptFactory.make (lang, session.script)
      razie.Log ("execute script=" + session.script)
+     Audit.recRun(lang, "", "", "", session.script)
      
      s.interactive(session.ctx) match {
        case s1@RazScript.RSSucc(res) => {
@@ -147,6 +148,9 @@ object Scripster {
      }
      }
      ).getOrElse((RazScript.RSError("No session found id="+sessionId), "No session found id="+sessionId))
+     
+     Audit.recResult(lang, "", "", "", script, ""+ret)
+     
      razie.Log ("result=" + ret)
      ret
    }
@@ -159,7 +163,8 @@ object Scripster {
     import scala.collection.JavaConversions._
    
     val ret:List[razie.AI] = l.map (s=>razie.AI(s)).toList
-    
+   
+    Audit.recOptions(session.lang, line)
     razie.Debug ("options for: \'"+line+"\' are: " +ret)
     ret
        }
@@ -167,3 +172,31 @@ object Scripster {
     }
   }
 }
+
+object Audit {
+  private def from : String = 
+     Option(ExecutionContext.instance().a("httpattrs")).map(_.asInstanceOf[AttrAccess] sa "RemoteIP").getOrElse("x.x.x.x") +
+     "/" +
+     Option(ExecutionContext.instance().a("httpattrs")).map(_.asInstanceOf[AttrAccess] sa "X-Forwarded-For").getOrElse("x.x.x.x")
+
+  private def audit (aa:AttrAccess) = razie.Audit (aa)
+
+  def enc (s:String) = Comms.encode(s)
+  
+  def recSessionFail  (lang:String, info:String="") {// new session
+     audit (razie.AA("event","sessionFail", "lang", lang, "from",from, "info", info))
+  }
+  def recSession  (lang:String) {// new session
+     audit (razie.AA("event","session", "lang", lang, "from",from))
+  }
+  def recOptions  (lang:String, line:String) {
+     audit (razie.AA("event","options", "lang",lang,"from",from, "line",enc(line)))
+  }
+  def recRun (lang:String, ok:String, k:String, api_key:String, script:String) {
+     audit (razie.AA("event","fork", "lang",lang,"ok", ok, "k", k, "api_key",api_key,"from",from,"script",enc(script)))
+  }
+  def recResult (lang:String, ok:String, k:String, api_key:String, script:String, result:String) {
+     audit (razie.AA("event","fork", "lang",lang,"ok", ok, "k", k, "api_key",api_key,"from",from,"script",enc(script), "result", enc(result)))
+  }
+}
+
