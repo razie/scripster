@@ -16,9 +16,9 @@ available at http://creativecommons.org/licenses/by/3.0/.
 
 The exception to the Creative Commons is that you cannot use the code in this project to offer
 services, to the public, that directly compete with specific "scripster" services offered by 
-http://scripster.razie.com .
+http://scripster.codewitter.com and http://codewitter.com .
 
 
 -----------
 
-The scriptpad includes software from http://code.google.com/p/jsyntaxpane/
+The scriptpad includes software from http://code.google.com/p/jsyntaxpane/ and http://github.com/
