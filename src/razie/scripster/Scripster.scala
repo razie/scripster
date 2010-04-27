@@ -108,6 +108,16 @@ object Scripster {
     * @return (complex code with info , just null or value) 
     */
    def exec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
+     var ret : (RazScript.RSResult[Any], AnyRef) = (RazScript.RSUnsupported, null)
+      
+     ret
+   }
+   
+   /** this runs in the current thread
+    * 
+    * @return (complex code with info , just null or value) 
+    */
+   def texec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
      val ret = Sessions.get (sessionId).map (session=> {
      session accumulate script
      

@@ -20,6 +20,7 @@ import razie.base.scripting._
 /** @deprecated */
 @SoaService (name="scripting", descr="scripging service", bindings=Array("http"))
 object ScriptService {
+   
   // intercept all possible calls to this service and redirect
   @SoaMethod (descr="interactive") // need this
   @SoaMethodSink // sink all calls

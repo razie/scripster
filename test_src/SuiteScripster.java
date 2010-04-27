@@ -15,7 +15,7 @@ public class SuiteScripster extends TestSuite {
     public static Test suite() {
         TestSuite result = new TestSuite(SuiteScripster.class.getName());
 
-//        result.addTestSuite(com.razie.pub.agent.test.TestMsgService.class);
+        result.addTestSuite(razie.scripster.test.ScalaScriptTest.class);
         
         return result;
     }
