@@ -5,13 +5,19 @@
  */
 package razie.base.scripting
 
+import razie.base.ActionContext
 import scala.tools.{nsc => nsc}
 import scala.tools.nsc.{ InterpreterResults => IR }
 
 /** will cache the environment */
-class ScalaScriptContext (parent:ScriptContext = null) extends ScriptContextImpl (parent) {
+class ScalaScriptContext (parent:ActionContext = null) extends ScriptContextImpl (parent) {
    val env = new nsc.Settings (err)
    val p = new RaziesInterpreter (env)         
+   
+   def this (parent:ActionContext, args:Any*)  = {
+      this (parent)
+      setAttr (args)
+   }
    
    lazy val c = {
       // not just create, but prime this ... first time it doesn't work...
@@ -39,7 +45,7 @@ class ScalaScriptContext (parent:ScriptContext = null) extends ScriptContextImpl
 
 // statics
 object SS {
-  def bind (ctx:ScriptContext, p:nsc.Interpreter) {
+  def bind (ctx:ActionContext, p:nsc.Interpreter) {
     p.bind ("ctx", ctx.getClass.getCanonicalName, ctx)
     if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].parent != null)
        p.bind ("parent", ctx.asInstanceOf[ScriptContextImpl].parent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].parent)
@@ -64,7 +70,7 @@ class ScriptScala (val script:String) extends RazScript {
      * 
      * @param c the context for the script
      */
-   override def eval(ctx:ScriptContext) : RazScript.RSResult[Any] = {
+   override def eval(ctx:ActionContext) : RazScript.RSResult[Any] = {
       var result:AnyRef = "";
 
       val sctx : Option[ScalaScriptContext] = 
@@ -105,7 +111,7 @@ class ScriptScala (val script:String) extends RazScript {
      * 
      * @param c the context for the script
      */
-   def interactive(ctx:ScriptContext) : RazScript.RSResult[Any] = {
+   def interactive(ctx:ActionContext) : RazScript.RSResult[Any] = {
       val sctx : Option[ScalaScriptContext] = 
        if (ctx.isInstanceOf[ScalaScriptContext])
          Some(ctx.asInstanceOf[ScalaScriptContext])
@@ -128,13 +134,13 @@ class ScriptScala (val script:String) extends RazScript {
         }
     }
    
-   def compile(ctx:ScriptContext) : RazScript.RSResult[Any] = RazScript.RSUnsupported
+   def compile(ctx:ActionContext) : RazScript.RSResult[Any] = RazScript.RSUnsupported
 }
 
 /** hacking the scala interpreter */
 class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
   
-  def eval (s:ScriptScala, ctx:ScriptContext) : RazScript.RSResult[Any] = {
+  def eval (s:ScriptScala, ctx:ActionContext) : RazScript.RSResult[Any] = {
     beQuietDuring {
       interpret(s.script) match {
         case IR.Success => 
