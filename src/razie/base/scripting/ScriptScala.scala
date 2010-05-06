@@ -11,8 +11,7 @@ import scala.tools.nsc.{ InterpreterResults => IR }
 
 /** will cache the environment */
 class ScalaScriptContext (parent:ActionContext = null) extends ScriptContextImpl (parent) {
-   val env = new nsc.Settings (err)
-   val p = new RaziesInterpreter (env)         
+   val p = SS mkParser err
    
    def this (parent:ActionContext, args:Any*)  = {
       this (parent)
@@ -46,6 +45,10 @@ class ScalaScriptContext (parent:ActionContext = null) extends ScriptContextImpl
 // statics
 object SS {
   def bind (ctx:ActionContext, p:nsc.Interpreter) {
+    ibind (ctx, p)  
+  }
+  
+  private[this] def ibind (ctx:ActionContext, p:nsc.Interpreter) {
     p.bind ("ctx", ctx.getClass.getCanonicalName, ctx)
     if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].parent != null)
        p.bind ("parent", ctx.asInstanceOf[ScriptContextImpl].parent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].parent)
@@ -56,6 +59,23 @@ object SS {
       val obj = ctx.getAttr(key);
       p.bind (key, obj.getClass.getCanonicalName, obj)
     }
+  }
+  
+  def mkParser (f: String => Unit) = {
+//    val env = new nsc.Settings (err)
+  val env = {
+     val set = new nsc.Settings(f)
+//     set.classpath.value += java.io.File.pathSeparator + System.getProperty ("java.class.path")
+     set.usejavacp.value = true
+     set
+  }
+  
+    val p = new RaziesInterpreter (env) {
+      override protected def parentClassLoader = SS.getClass.getClassLoader
+    }
+  
+  p.setContextClassLoader  
+  p
   }
 }
 
@@ -78,8 +98,7 @@ class ScriptScala (val script:String) extends RazScript {
          Some(ctx.asInstanceOf[ScalaScriptContext])
        else None
 
-      val env = sctx.map (_.env) getOrElse new scala.tools.nsc.Settings
-      val p = sctx.map (_.p) getOrElse new scala.tools.nsc.Interpreter (env)         
+      val p = sctx.map (_.p) getOrElse (SS mkParser println)
       
       try {
          SS.bind(ctx, p)
@@ -117,8 +136,7 @@ class ScriptScala (val script:String) extends RazScript {
          Some(ctx.asInstanceOf[ScalaScriptContext])
        else None
 
-      val env = sctx.map (_.env) getOrElse new scala.tools.nsc.Settings
-      val p = sctx.map (_.p) getOrElse new RaziesInterpreter (env)         
+      val p = sctx.map (_.p) getOrElse (SS mkParser println)
       
       try {
          SS.bind(ctx, p)
@@ -134,7 +152,7 @@ class ScriptScala (val script:String) extends RazScript {
         }
     }
    
-   def compile(ctx:ActionContext) : RazScript.RSResult[Any] = RazScript.RSUnsupported
+   def compile(ctx:ActionContext) : RazScript.RSResult[Any] = RazScript.RSUnsupported ("ScriptScala.compile() TODO ")
 }
 
 /** hacking the scala interpreter */
@@ -160,16 +178,34 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
 }
 
 /** a test app */
-object ScriptScalaTestApp extends Application{
-    var script = "val y = 3; def f(x:Int)={x+1}; val res=f(7); res";
-    var js = new ScriptScala(script);
-    System.out.println(js.eval(ScriptFactory.mkContext()));
+//object ScriptScalaTestApp extends Application{
+//    var script = "val y = 3; def f(x:Int)={x+1}; val res=f(7); res";
+//    var js = new ScriptScala(script);
+//    System.out.println(js.eval(ScriptFactory.mkContext()));
+//
+//    script = "TimeOfDay.value()";
+//    js = new ScriptScala(script);
+//    var ctx = ScriptFactory.mkContext();
+//    ctx.setAttr("TimeOfDay", new TimeOfDay(), null);
+//    System.out.println(js.eval(ctx));
+//    
+//    js.eval(ctx).map(println (_))
+//}
 
-    script = "TimeOfDay.value()";
-    js = new ScriptScala(script);
-    var ctx = ScriptFactory.mkContext();
-    ctx.setAttr("TimeOfDay", new TimeOfDay(), null);
-    System.out.println(js.eval(ctx));
-    
-    js.eval(ctx).map(println (_))
+class Tester {}
+
+/** hacking the scala interpreter */
+class RInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
+  protected override def parentClassLoader: ClassLoader = this.getClass.getClassLoader()
+}
+
+object SimplifiedTestApp extends Application{
+   var script = "val y = 3; def f(x:Int)={x+1}; val res=f(7); res";
+   var ctx = new razie.base.scripting.Tester()
+   val env = new nsc.Settings ()
+   val p = new RInterpreter (env)         
+   
+   p.bind ("ctx", ctx.getClass.getCanonicalName, ctx)
+   
+   println (p.interpret (script))
 }

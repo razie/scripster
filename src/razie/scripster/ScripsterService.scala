@@ -47,7 +47,8 @@ object ScripsterService {
        case s2@RazScript.RSSuccNoValue => Draw toString "Scripster.Status:...ok"
        case s3@RazScript.RSError(err) => Draw toString "Error: " + err
        case s4@RazScript.RSIncomplete => Draw toString "Scripster.Status:...incomplete"
-       case _ => Draw text "Scripster.Status:??? the interpreter said what ???"
+       case s4@RazScript.RSUnsupported(msg) => Draw toString "Scripster.Status:...Unsupported: " + msg
+       case _ => Draw text "Scripster.Status:??? the interpreter said what ??? : " + ret._1 .toString
      }
   }
   

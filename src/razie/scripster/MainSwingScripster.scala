@@ -26,22 +26,16 @@ object MainSwingScripster extends SimpleSwingApplication {
 
   def top = new MainFrame {
     
-     // warm up the scala compiler
    new java.lang.Thread ( 
          new java.lang.Runnable { 
             def run() { 
+         // start the web server version in a separate thread to speed up 
+               Scripster.createServer(4445)
+               
+     // warm up the scala compiler
                new ScriptScala ("1+2").eval(ScriptContextImpl.global) 
                }}
          ).start
-
-         // start the web server version in a separate thread to speed up 
-   new java.lang.Thread ( 
-         new java.lang.Runnable { 
-            def run() { 
-               Scripster.createServer(4445)
-               }}
-         ).start
-   
 
          // draw a swing painting
          

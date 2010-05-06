@@ -108,9 +108,9 @@ object Scripster {
     * @return (complex code with info , just null or value) 
     */
    def exec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
-     var ret : (RazScript.RSResult[Any], AnyRef) = (RazScript.RSUnsupported, null)
-      
-     ret
+//     var ret : (RazScript.RSResult[Any], AnyRef) = (RazScript.RSUnsupported ("Scripster.exec() TODO"), null)
+//     ret
+      texec (lang, script, sessionId)
    }
    
    /** this runs in the current thread
@@ -143,7 +143,7 @@ object Scripster {
           razie.Debug ("SIncomplete...accumulating: "+script)
           (s4, null)
        }
-       case s5@RazScript.RSUnsupported => {
+       case s5@RazScript.RSUnsupported (msg) => {
           // do the accumulation ourselves
          if (! session.inStatement) {
            val s = ScriptFactory.make ("scala", session.script)
