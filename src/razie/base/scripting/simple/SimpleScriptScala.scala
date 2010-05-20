@@ -81,7 +81,7 @@ object SS {
     }
   
     val p = new RaziesInterpreter (env) {
-      override protected def parentClassLoader = SS.getClass.getClassLoader
+//      override protected def parentClassLoader = SS.getClass.getClassLoader
     }
   
     p.setContextClassLoader  
