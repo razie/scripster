@@ -47,15 +47,7 @@ case class SSCtx (var values:Map[String, Any]) {
    val p = SS mkParser err
    var lastError : String = ""
    
-   lazy val c = {
-      // not just create, but prime this ... first time it doesn't work...
-      SS.bind (this, p)
-      val cc = new nsc.interpreter.Completion(p)
-      var scr = "java.lang.Sys"
-      val l = new java.util.ArrayList[String]()
-      cc.jline.complete (scr, scr.length-1, l)
-      cc
-   }
+   lazy val c = new nsc.interpreter.Completion(p)
    
    /** content assist options */
    def options (scr:String) : java.util.List[String] = {
@@ -142,9 +134,12 @@ case class SS (val script:String) {
       try {
          SS.bind(ctx, p)
 
-         p.eval(this, ctx)
+         val ret = p.eval(this, ctx)
          
-        // TODO put back all variables
+         // bind new names back into context
+         p.lastNames.foreach (m => ctx.values += (m._1 -> m._2))
+         
+         ret
         } catch {
           case e:Exception => {
             razie.Log ("While processing script: " + this.script, e)
@@ -179,8 +174,12 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
   def lastNames = {
     // TODO nicer way to build a map from a list?
     val ret = new scala.collection.mutable.HashMap[String,Any]()
-    // TODO get the value of x
-    razLastReq.boundNames.foreach (x => ret += (x -> x.asInstanceOf[Any]))
+    // TODO get the value of x nicer
+    razLastReq.boundNames.foreach (x => {
+       val xx = (x -> evalExpr[Any] (x))
+       println ("bound: " + xx)
+       ret += (x -> evalExpr[Any] (x))
+    })
     ret
   }
 }
