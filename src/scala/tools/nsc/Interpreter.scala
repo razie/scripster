@@ -2,7 +2,6 @@
  * Copyright 2005-2010 LAMP/EPFL
  * @author  Martin Odersky
  */
-// $Id: Interpreter.scala 21724 2010-04-28 18:42:26Z extempore $
 
 package scala.tools.nsc
 
@@ -75,8 +74,8 @@ import Interpreter._
  */
 class Interpreter(val settings: Settings, out: PrintWriter) {
   repl =>
-  
-   // BEGIN RAZ hacks
+ 
+     // BEGIN RAZ hacks
   
    // 1. Request is private. I need: dependencies (usedNames?) newly defined values (boundNames?)
    // the resulting value and the error message(s) if any
@@ -101,6 +100,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
   }
    // END RAZ hacks
   
+
   /** construct an interpreter that reports to Console */
   def this(settings: Settings) = this(settings, new NewLinePrintWriter(new ConsoleWriter, true))
   def this() = this(new Settings())
@@ -254,6 +254,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
   private val usedNameMap = new HashMap[Name, Request]()
   private val boundNameMap = new HashMap[Name, Request]()
   private def allHandlers = prevRequests.toList flatMap (_.handlers)
+  private def allReqAndHandlers = prevRequests.toList flatMap (req => req.handlers map (req -> _))
   
   def printAllTypeOf = {
     prevRequests foreach { req =>
@@ -436,10 +437,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
       }
       
       /** Flatten the handlers out and pair each with the original request */
-      val rhpairs = prevRequests.reverse.toList flatMap { req =>
-        req.handlers map (ReqAndHandler(req, _))
-      }
-      select(rhpairs, wanted).reverse
+      select(allReqAndHandlers reverseMap  { case (r, h) => ReqAndHandler(r, h) }, wanted).reverse
     }
 
     val code, trailingBraces, accessPath = new StringBuffer
@@ -595,27 +593,28 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
    *  @return     ...
    */
   def interpret(line: String): IR.Result = interpret(line, false)
-  def interpret(line: String, synthetic: Boolean): IR.Result = {    
-    val req = requestFromLine(line, synthetic) match {
-      case Left(result) => return result
-      case Right(req)   => req
-    }
-    // null indicates a disallowed statement type; otherwise compile and
-    // fail if false (implying e.g. a type error)
-    if (req == null || !req.compile)
-      return IR.Error
-        
-    val (result, succeeded) = req.loadAndRun    
-    if (printResults || !succeeded)
-      out print clean(result)
+  def interpret(line: String, synthetic: Boolean): IR.Result = {
+    def loadAndRunReq(req: Request) = {
+      val (result, succeeded) = req.loadAndRun    
+      if (printResults || !succeeded)
+        out print clean(result)
 
-    if (succeeded) {
-      if (!synthetic)
-        recordRequest(req)    // book-keeping
-
-      IR.Success
+      // book-keeping
+      if (succeeded && !synthetic)
+        recordRequest(req)
+      
+      if (succeeded) IR.Success
+      else IR.Error
     }
-    else IR.Error
+    
+    requestFromLine(line, synthetic) match {
+      case Left(result) => result
+      case Right(req)   => 
+        // null indicates a disallowed statement type; otherwise compile and
+        // fail if false (implying e.g. a type error)
+        if (req == null || !req.compile) IR.Error
+        else loadAndRunReq(req)
+    }
   }
 
   /** A name creator used for objects created by <code>bind()</code>. */
@@ -699,7 +698,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
     def extraCodeToEvaluate(req: Request, code: PrintWriter) { }
     def resultExtractionCode(req: Request, code: PrintWriter) { }
 
-    override def toString = "%s(usedNames = %s)".format(this.getClass, usedNames)
+    override def toString = "%s(used = %s)".format(this.getClass.toString split '.' last, usedNames)
   }
 
   private class GenericHandler(member: Tree) extends MemberHandler(member)
@@ -1002,6 +1001,8 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
         }
       }
     }
+    
+    override def toString = "Request(line=%s, %s trees)".format(line, trees.size)
   }
   
   /** A container class for methods to be injected into the repl
