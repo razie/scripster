@@ -9,26 +9,20 @@ import razie.base.ActionContext
 import scala.tools.{nsc => nsc}
 import scala.tools.nsc.{ InterpreterResults => IR }
 
-/** will cache the environment */
+/** will cache the environment, including the parser instance. 
+ * That way things defined in one script are visible to the next */
 class ScalaScriptContext (parent:ActionContext = null) extends ScriptContextImpl (parent) {
    val p = SS mkParser err
    
    def this (parent:ActionContext, args:Any*)  = {
       this (parent)
-      setAttr (args)
+      // TODO I'm loosing the scala types. JavaAttrAccessImpl needs to become scala
+      setAttr (args map (_.asInstanceOf[AnyRef]) :_*)
    }
+
+   lazy val c = new nsc.interpreter.Completion(p)
    
-   lazy val c = {
-      // not just create, but prime this ... first time it doesn't work...
-      SS.bind (this, p)
-      val cc = new nsc.interpreter.Completion(p)
-      var scr = "java.lang.Sys"
-      val l = new java.util.ArrayList[String]()
-      cc.jline.complete (scr, scr.length-1, l)
-      cc
-   }
-   
-      /** content assist options */
+   /** content assist options */
    override def options (scr:String) : java.util.List[String] = {
       SS.bind (this, p)
       val l = new java.util.ArrayList[String]()
@@ -61,26 +55,23 @@ object SS {
     }
   }
   
-  def mkParser (f: String => Unit) = {
-//    val env = new nsc.Settings (err)
-  val env = {
-     val set = new nsc.Settings(f)
-//     set.classpath.value += java.io.File.pathSeparator + System.getProperty ("java.class.path")
-     set.usejavacp.value = true
-     set
-  }
-  
-    val p = new RaziesInterpreter (env) {
-      override protected def parentClassLoader = SS.getClass.getClassLoader
+  def mkParser (errLogger: String => Unit) = {
+    val env = {
+       val set = new nsc.Settings(errLogger)
+  //     set.classpath.value += java.io.File.pathSeparator + System.getProperty ("java.class.path")
+       set.usejavacp.value = true
+       set
     }
   
-  p.setContextClassLoader  
-  p
+    val p = new RaziesInterpreter (env) 
+  
+    p.setContextClassLoader  
+    p
   }
 }
 
 /** an interpreted scala script */
-class ScriptScala (val script:String) extends RazScript {
+case class ScriptScala (val script:String) extends RazScript {
 
     /** @return the statement */
     override def toString() = "scala:\n" + script
@@ -93,7 +84,7 @@ class ScriptScala (val script:String) extends RazScript {
    override def eval(ctx:ActionContext) : RazScript.RSResult[Any] = {
       var result:AnyRef = "";
 
-      val sctx : Option[ScalaScriptContext] = 
+     val sctx : Option[ScalaScriptContext] = 
        if (ctx.isInstanceOf[ScalaScriptContext])
          Some(ctx.asInstanceOf[ScalaScriptContext])
        else None
@@ -105,15 +96,19 @@ class ScriptScala (val script:String) extends RazScript {
 
          // this see http://lampsvn.epfl.ch/trac/scala/ticket/874 at the end, there was some work with jsr223
             
-            // Now evaluate the script
+        // Now evaluate the script
 
-            val r =  p.evalExpr[Any] (script)
+        val r =  p.evalExpr[Any] (script)
 
-            // convert to String
-            result = if (r==null) "" else r.toString
+        // TODO why was I converting to String?
+        // convert to String
+//      result = if (r==null) "" else r.toString
+         if (r!=null) result = r.asInstanceOf[AnyRef]
 
-            // TODO put back all variables
-           RazScript.RSSucc(result)
+         // bind new names back into context
+         p.lastNames.foreach (m => ctx.set (m._1, m._2))
+         
+         RazScript.RSSucc(result)
         } catch {
           case e:Exception => {
             razie.Log ("While processing script: " + this.script, e)
@@ -141,9 +136,12 @@ class ScriptScala (val script:String) extends RazScript {
       try {
          SS.bind(ctx, p)
 
-         p.eval(this, ctx)
+         val ret = p.eval(this, ctx)
          
-        // TODO put back all variables
+         // bind new names back into context
+         p.lastNames.foreach (m => ctx.set (m._1, m._2))
+         
+         ret  
         } catch {
           case e:Exception => {
             razie.Log ("While processing script: " + this.script, e)
@@ -175,37 +173,18 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
      }
     }
   }
+  
+  def lastNames = {
+    // TODO nicer way to build a map from a list?
+    val ret = new scala.collection.mutable.HashMap[String,Any]()
+    // TODO get the value of x nicer
+    razLastReq.boundNames.foreach (x => {
+       val xx = (x -> evalExpr[Any] (x))
+       println ("bound: " + xx)
+       ret += (x -> evalExpr[Any] (x))
+    })
+    ret
+  }
 }
 
-/** a test app */
-//object ScriptScalaTestApp extends Application{
-//    var script = "val y = 3; def f(x:Int)={x+1}; val res=f(7); res";
-//    var js = new ScriptScala(script);
-//    System.out.println(js.eval(ScriptFactory.mkContext()));
-//
-//    script = "TimeOfDay.value()";
-//    js = new ScriptScala(script);
-//    var ctx = ScriptFactory.mkContext();
-//    ctx.setAttr("TimeOfDay", new TimeOfDay(), null);
-//    System.out.println(js.eval(ctx));
-//    
-//    js.eval(ctx).map(println (_))
-//}
-
-class Tester {}
-
-/** hacking the scala interpreter */
-class RInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
-  protected override def parentClassLoader: ClassLoader = this.getClass.getClassLoader()
-}
-
-object SimplifiedTestApp extends Application{
-   var script = "val y = 3; def f(x:Int)={x+1}; val res=f(7); res";
-   var ctx = new razie.base.scripting.Tester()
-   val env = new nsc.Settings ()
-   val p = new RInterpreter (env)         
-   
-   p.bind ("ctx", ctx.getClass.getCanonicalName, ctx)
-   
-   println (p.interpret (script))
-}
+/** scripting examples in ScriptScalaTest.scala */

@@ -71,7 +71,7 @@ object SS {
     ctx.values foreach (m => p.bind (m._1, m._2.asInstanceOf[AnyRef].getClass.getCanonicalName, m._2))
   }
 
-  // make a custome parser
+  // make a custom parser
   def mkParser (errLogger: String => Unit) = {
     val env = {
        val set = new nsc.Settings(errLogger)
@@ -80,9 +80,7 @@ object SS {
        set
     }
   
-    val p = new RaziesInterpreter (env) {
-//      override protected def parentClassLoader = SS.getClass.getClassLoader
-    }
+    val p = new RaziesInterpreter (env) 
   
     p.setContextClassLoader  
     p
@@ -105,16 +103,16 @@ case class SS (val script:String) {
 
          // this see http://lampsvn.epfl.ch/trac/scala/ticket/874 at the end, there was some work with jsr223
             
-            // Now evaluate the script
+         // Now evaluate the script
 
-            val r =  p.evalExpr[Any] (script)
+         val r =  p.evalExpr[Any] (script)
 
-            if (r!=null) result = r.asInstanceOf[AnyRef]
+         if (r!=null) result = r.asInstanceOf[AnyRef]
 
          // bind new names back into context
          p.lastNames.foreach (m => ctx.values += (m._1 -> m._2))
            
-           RazScript.RSSucc(result)
+         RazScript.RSSucc(result)
         } catch {
           case e:Exception => {
             razie.Log ("While processing script: " + this.script, e)
@@ -152,7 +150,8 @@ case class SS (val script:String) {
 
 /** hacking the scala interpreter */
 class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
-  
+
+  /** transform interpreter codes into reacher Raz codes */
   def eval (s:SS, ctx:SSCtx) : RazScript.RSResult[Any] = {
     beQuietDuring {
       interpret(s.script) match {
