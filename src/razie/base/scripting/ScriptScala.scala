@@ -106,7 +106,7 @@ case class ScriptScala (val script:String) extends RazScript {
          if (r!=null) result = r.asInstanceOf[AnyRef]
 
          // bind new names back into context
-         p.lastNames.foreach (m => ctx.set (m._1, m._2))
+         p.lastNames.foreach (m => ctx.set (m._1, m._2.asInstanceOf[AnyRef]))
          
          RazScript.RSSucc(result)
         } catch {
@@ -139,7 +139,7 @@ case class ScriptScala (val script:String) extends RazScript {
          val ret = p.eval(this, ctx)
          
          // bind new names back into context
-         p.lastNames.foreach (m => ctx.set (m._1, m._2))
+         p.lastNames.foreach (m => ctx.set (m._1, m._2.asInstanceOf[AnyRef]))
          
          ret  
         } catch {
