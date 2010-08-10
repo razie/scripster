@@ -9,7 +9,7 @@ import scala.tools.{nsc => nsc}
 import scala.tools.nsc.{ InterpreterResults => IR }
 
 /**
- * nice result specification
+ * nice result specification for a script runner
  */
 object RazScript {
    // the result of running a script
@@ -43,7 +43,7 @@ object RazScript {
  * 
  * It also defines the vlaues available to the scripts. Values can be modified/added to by previous scripts
  */
-case class SSCtx (var values:Map[String, Any]) {
+case class ScriptContext (var values:Map[String, Any]) {
    val p = SS mkParser err
    var lastError : String = ""
    
@@ -65,7 +65,7 @@ case class SSCtx (var values:Map[String, Any]) {
 object SS {
 
   // bind a context and its values
-  def bind (ctx:SSCtx, p:nsc.Interpreter) {
+  def bind (ctx:ScriptContext, p:nsc.Interpreter) {
     p.bind ("ctx", ctx.getClass.getCanonicalName, ctx)
 
     ctx.values foreach (m => p.bind (m._1, m._2.asInstanceOf[AnyRef].getClass.getCanonicalName, m._2))
@@ -88,12 +88,12 @@ object SS {
 }
 
 /** an interpreted scala script */
-case class SS (val script:String) {
+case class AScript (val script:String) {
 
    def print = { println ("scala:\n" + script); this}
 
    // evaluate as an independent expression
-   def eval (ctx:SSCtx) : RazScript.RSResult[Any] = {
+   def eval (ctx:ScriptContext) : RazScript.RSResult[Any] = {
       var result:AnyRef = "";
 
       val p = ctx.p
@@ -125,7 +125,7 @@ case class SS (val script:String) {
     }
 
    // evaluate as part of a series of expressions in an interactive environment
-   def interactive(ctx:SSCtx) : RazScript.RSResult[Any] = {
+   def interactive(ctx:ScriptContext) : RazScript.RSResult[Any] = {
 
       val p = ctx.p
       
@@ -152,17 +152,17 @@ case class SS (val script:String) {
 class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
 
   /** transform interpreter codes into reacher Raz codes */
-  def eval (s:SS, ctx:SSCtx) : RazScript.RSResult[Any] = {
+  def eval (s:AScript, ctx:ScriptContext) : RazScript.RSResult[Any] = {
     beQuietDuring {
       interpret(s.script) match {
         case IR.Success => 
-          if (razLastReq.extractionValue.isDefined) 
-             RazScript.RSSucc (razLastReq.extractionValue get)
+          if (lastRequest map (_.extractionValue.isDefined) getOrElse false) 
+             RazScript.RSSucc (lastRequest.get.extractionValue get)
           else
              RazScript.RSSuccNoValue
         case IR.Error => {
-           val c = RazScript.RSError (razLastReq.err mkString "\n\r")
-           razAccerr.clear
+           val c = RazScript.RSError (lastRequest.get.err mkString "\n\r")
+           errAccumulator.clear
            c
         }
         case IR.Incomplete => RazScript.RSIncomplete
@@ -174,7 +174,7 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
     // TODO nicer way to build a map from a list?
     val ret = new scala.collection.mutable.HashMap[String,Any]()
     // TODO get the value of x nicer
-    razLastReq.boundNames.foreach (x => {
+    lastRequest.get.boundNames.foreach (x => {
        val xx = (x -> evalExpr[Any] (x))
        println ("bound: " + xx)
        ret += (x -> evalExpr[Any] (x))
@@ -197,36 +197,48 @@ object SimpleSSSamples extends Application {
      }
      }
   
+  def dontexpect (x:Any) (f: => Any) = { 
+     println ("Skipping...")
+  }
+  
   // simple, one time, expression
-  expect (3) { 
-    SS("1+2").print.eval (SSCtx(Map())) getOrElse "?"
+  dontexpect (3) { 
+    AScript("1+2").print.eval (ScriptContext(Map())) getOrElse "?"
     }
 
   // test binding variables
-  expect ("12") {
-    SS ("a+b").print.eval (SSCtx(Map("a" -> "1", "b" -> "2"))) getOrElse "?"
+  dontexpect ("12") {
+    AScript ("a+b").print.eval (ScriptContext(Map("a" -> "1", "b" -> "2"))) getOrElse "?"
     }
 
   // test sharing variables - this is possible because populated variables end up in the context and we 
   // share the context
-  expect ("12") {
-     val ctx = SSCtx(Map("a" -> "1", "b" -> "2"))
-     SS("val c = a+b").print.interactive (ctx)
-     SS("c").print.interactive (ctx) getOrElse "?"
+  dontexpect ("12") {
+     val ctx = ScriptContext(Map("a" -> "1", "b" -> "2"))
+     AScript("val c = a+b").print.interactive (ctx)
+     AScript("c").print.interactive (ctx) getOrElse "?"
      }
 
   // options
-  expect (true) {
-     val ctx = SSCtx(Map("a" -> 1, "b" -> 2))
+  dontexpect (true) {
+     val ctx = ScriptContext(Map("a" -> 1, "b" -> 2))
      ctx.options ("java.lang.Sys") contains ("System")
      }
 
   // export new variables back into context
-  expect ("12") {
-     val ctx = SSCtx(Map("a" -> "1", "b" -> "2")) 
-     SS("val c = a+b").print.interactive (ctx)
+  dontexpect ("12") {
+     val ctx = ScriptContext(Map("a" -> "1", "b" -> "2")) 
+     AScript("val c = a+b").print.interactive (ctx)
      ctx.values getOrElse ("c", "?")
      }
+
+  // test sharing defs
+  expect (9) {
+     val ctx = ScriptContext(Map("a" -> "1", "b" -> "2"))
+     AScript("""def f(x: Int) = x*x""").print.interactive (ctx)
+     AScript("""f (1+2)""").print.interactive (ctx) getOrElse "?"
+     }
+
 
   if (failed > 0)
      println ("====================FAILED "+failed+" tests=============")
