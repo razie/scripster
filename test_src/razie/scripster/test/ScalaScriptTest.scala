@@ -35,4 +35,21 @@ class ScalaScriptTest extends JUnit3Suite {
      val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
      ctx.options ("java.lang.Sys") contains ("System")
      }
+  
+  def testdef = expect (3) { 
+    // simple, one time, expression
+     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
+    ScriptScala ("""
+def add (i:Int*) = {
+  val ss = "12344"
+  var ii = 0
+  for (k <- i) ii = ii + k
+  ii
+  }
+"""
+).interactive (ctx) 
+
+     ScriptScala ("add (1+2, 8/4)").interactive (ctx) getOrElse "?" 
+   }
+
 }
