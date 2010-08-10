@@ -1,4 +1,4 @@
-/* NSC -- new Scala compiler
+   /* NSC -- new Scala compiler
  * Copyright 2005-2010 LAMP/EPFL
  * @author  Martin Odersky
  */
@@ -26,7 +26,7 @@ import scala.util.control.Exception.{ Catcher, catching, ultimately, unwrapping 
 import io.{ PlainFile, VirtualDirectory }
 import reporters.{ ConsoleReporter, Reporter }
 import symtab.{ Flags, Names }
-import util.{ SourceFile, BatchSourceFile, ClassPath, Chars }
+import util.{ SourceFile, BatchSourceFile, ScriptSourceFile, ClassPath, Chars, stringFromWriter }
 import scala.reflect.NameTransformer
 import scala.tools.nsc.{ InterpreterResults => IR }
 import interpreter._
@@ -74,33 +74,39 @@ import Interpreter._
  */
 class Interpreter(val settings: Settings, out: PrintWriter) {
   repl =>
- 
-     // BEGIN RAZ hacks
   
+   // BEGIN RAZ hacks
+
    // 1. Request is private. I need: dependencies (usedNames?) newly defined values (boundNames?)
    // the resulting value and the error message(s) if any
-   case class RazRequest (usedNames : List[String], boundNames:List[String], extractionValue:Option[Any], err:List[String])
-  
+   case class PublicRequest (usedNames : List[String], boundNames:List[String], extractionValue:Option[Any], err:List[String])
+
    // 2. Can't get the last request
-   def razLastReq : RazRequest = {
-      val l =  prevRequests.last
-      RazRequest (l.usedNames.map(_.decode), l.boundNames.map(_.decode), l.extractionValue, razAccerr.toList)
-   }
- 
-   // 3. Can't get the actual error message 
-   var razAccerr = new scala.collection.mutable.ListBuffer[String] ()
-      
-  /** reporter */
+   def lastRequest : Option[PublicRequest] =
+     prevRequests.lastOption map (l =>
+       PublicRequest (l.usedNames.map(_.decode), l.boundNames.map(_.decode), l.extractionValue, errAccumulator.toList)
+       )
+
+   // 3. Can't get the actual error message
+   // TODO this needs cleared after every run...ugly - no time to fix. should group lastErr under lastRequ
+   var errAccumulator = new scala.collection.mutable.ListBuffer[String] ()
+
+  /** hacked reporter - accumulates erorrs... */
   object reporter extends ConsoleReporter(settings, null, out) {
     override def printMessage(msg: String) {
-      razAccerr append msg
+      errAccumulator append msg
       out println clean(msg)
       out.flush()
     }
   }
-   // END RAZ hacks
-  
 
+  // END RAZ hacks
+   
+  def println(x: Any) = {
+    out.println(x)
+    out.flush()
+  }
+  
   /** construct an interpreter that reports to Console */
   def this(settings: Settings) = this(settings, new NewLinePrintWriter(new ConsoleWriter, true))
   def this() = this(new Settings())
@@ -126,28 +132,37 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
       |}
       |""".stripMargin
     
-    val run = new _compiler.Run()
-    run compileSources List(new BatchSourceFile("<init>", source))
-    if (settings.debug.value) {
-      out println "Repl compiler initialized."
-      out.flush()
+    try {
+      new _compiler.Run() compileSources List(new BatchSourceFile("<init>", source))
+      if (isReplDebug || settings.debug.value)
+        println("Repl compiler initialized.")
+      true
+    } 
+    catch {
+      case MissingRequirementError(msg) => println("""
+        |Failed to initialize compiler: %s not found.
+        |** Note that as of 2.8 scala does not assume use of the java classpath.
+        |** For the old behavior pass -usejavacp to scala, or if using a Settings
+        |** object programatically, settings.usejavacp.value = true.""".stripMargin.format(msg)
+      )
+      false
     }
-    true
   }
   
   // set up initialization future
-  private var _isInitialized: () => Boolean = () => false
+  private var _isInitialized: () => Boolean = null
   def initialize() = synchronized { 
-    if (!_isInitialized())
+    if (_isInitialized == null)
       _isInitialized = scala.concurrent.ops future _initialize()
   }
 
   /** the public, go through the future compiler */
   lazy val compiler: Global = {
     initialize()
-    _isInitialized()   // blocks until it is
-      
-    _compiler
+
+    // blocks until it is ; false means catastrophic failure
+    if (_isInitialized()) _compiler
+    else null
   }
 
   import compiler.{ Traverser, CompilationUnit, Symbol, Name, Type }
@@ -190,16 +205,6 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
 
   /** interpreter settings */
   lazy val isettings = new InterpreterSettings(this)
-  
-  /** Heuristically strip interpreter wrapper prefixes
-   *  from an interpreter output string.
-   */
-  def stripWrapperGunk(str: String): String =
-    if (isettings.unwrapStrings) {      
-      val wrapregex = """(line[0-9]+\$object[$.])?(\$iw[$.])*"""
-      str.replaceAll(wrapregex, "")
-    }
-    else str
 
   /** Instantiate a compiler.  Subclasses can override this to
    *  change the compiler class used by this interpreter. */
@@ -340,15 +345,6 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
   def getVarName = varNameCreator()
   def getSynthVarName = synthVarNameCreator()
 
-  /** generate a string using a routine that wants to write on a stream */
-  private def stringFrom(writer: PrintWriter => Unit): String = {
-    val stringWriter = new StringWriter()
-    val stream = new NewLinePrintWriter(stringWriter)
-    writer(stream)
-    stream.close
-    stringWriter.toString
-  }
-
   /** Truncate a string if it is longer than isettings.maxPrintString */
   private def truncPrintString(str: String): String = {
     val maxpr = isettings.maxPrintString
@@ -358,8 +354,11 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
     else str.substring(0, maxpr-3) + trailer
   }
 
-  /** Clean up a string for output */
-  private def clean(str: String) = truncPrintString(stripWrapperGunk(str))
+  /** Clean up a string for output */  
+  private def clean(str: String) = truncPrintString(
+    if (isettings.unwrapStrings) stripWrapperGunk(str)
+    else str
+  )
 
   /** Indent some code by the width of the scala> prompt.
    *  This way, compiler error messages read better.
@@ -368,7 +367,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
   def indentCode(code: String) = {
     /** Heuristic to avoid indenting and thereby corrupting """-strings and XML literals. */
     val noIndent = (code contains "\n") && (List("\"\"\"", "</", "/>") exists (code contains _))
-    stringFrom(str =>
+    stringFromWriter(str =>
       for (line <- code.lines) {
         if (!noIndent)
           str.print(spaces)
@@ -607,7 +606,8 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
       else IR.Error
     }
     
-    requestFromLine(line, synthetic) match {
+    if (compiler == null) IR.Error
+    else requestFromLine(line, synthetic) match {
       case Left(result) => result
       case Right(req)   => 
         // null indicates a disallowed statement type; otherwise compile and
@@ -856,7 +856,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
     def toCompute = line
 
     /** generate the source code for the object that computes this request */
-    def objectSourceCode: String = stringFrom { code => 
+    def objectSourceCode: String = stringFromWriter { code => 
       val preamble = """
         |object %s {
         |  %s%s
@@ -870,7 +870,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
 
     /** generate source code for the object that retrieves the result
         from objectSourceCode */
-    def resultObjectSourceCode: String = stringFrom { code =>
+    def resultObjectSourceCode: String = stringFromWriter { code =>
       /** We only want to generate this code when the result
        *  is a value which can be referred to as-is.
        */      
@@ -991,7 +991,7 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
         case t: Throwable if bindLastException =>
           withoutBindingLastException {
             quietBind("lastException", "java.lang.Throwable", t)
-            (stringFrom(t.printStackTrace(_)), false)
+            (stringFromWriter(t.printStackTrace(_)), false)
           }
       }
       
