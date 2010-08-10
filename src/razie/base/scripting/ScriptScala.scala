@@ -160,13 +160,13 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
     beQuietDuring {
       interpret(s.script) match {
         case IR.Success => 
-          if (razLastReq.extractionValue.isDefined) 
-             RazScript.RSSucc (razLastReq.extractionValue get)
+          if (lastRequest map (_.extractionValue.isDefined) getOrElse false) 
+             RazScript.RSSucc (lastRequest.get.extractionValue get)
           else
              RazScript.RSSuccNoValue
         case IR.Error => {
-           val c = RazScript.RSError (razLastReq.err mkString "\n\r")
-           razAccerr.clear
+           val c = RazScript.RSError (lastRequest.get.err mkString "\n\r")
+           errAccumulator.clear
            c
         }
         case IR.Incomplete => RazScript.RSIncomplete
@@ -178,7 +178,7 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
     // TODO nicer way to build a map from a list?
     val ret = new scala.collection.mutable.HashMap[String,Any]()
     // TODO get the value of x nicer
-    razLastReq.boundNames.foreach (x => {
+    lastRequest.get.boundNames.foreach (x => {
        val xx = (x -> evalExpr[Any] (x))
        println ("bound: " + xx)
        ret += (x -> evalExpr[Any] (x))
