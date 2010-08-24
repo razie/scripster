@@ -1,1 +1,2 @@
-java -Djava.security.manager -Djava.security.policy=./policyfile -classpath ./dist/scripster-dist.jar:./lib/jline-0_9_5.jar:/host/bin/scala/lib/scala-library.jar:/host/bin/scala/lib/scala-compiler.jar:/host/bin/scala/lib/scala-swing.jar razie.scripster.JScalapSwing
+#java -Djava.security.manager -Djava.security.policy=./policyfile -classpath ./dist/scripster-dist.jar:./lib/jline-0_9_5.jar:/host/bin/scala/lib/scala-library.jar:/host/bin/scala/lib/scala-compiler.jar:/host/bin/scala/lib/scala-swing.jar razie.scripster.MainSwingScripster
+java -classpath ./dist/scripster-dist.jar:./lib/jline-0_9_5.jar:/host/bin/scala/lib/scala-library.jar:/host/bin/scala/lib/scala-compiler.jar:/host/bin/scala/lib/scala-swing.jar razie.scripster.MainSwingScripster

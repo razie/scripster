@@ -79,12 +79,12 @@ class Interpreter(val settings: Settings, out: PrintWriter) {
 
    // 1. Request is private. I need: dependencies (usedNames?) newly defined values (boundNames?)
    // the resulting value and the error message(s) if any
-   case class PublicRequest (usedNames : List[String], boundNames:List[String], extractionValue:Option[Any], err:List[String])
+   case class PublicRequest (usedNames : List[String], valueNames:List[String], extractionValue:Option[Any], err:List[String])
 
    // 2. Can't get the last request
    def lastRequest : Option[PublicRequest] =
      prevRequests.lastOption map (l =>
-       PublicRequest (l.usedNames.map(_.decode), l.boundNames.map(_.decode), l.extractionValue, errAccumulator.toList)
+       PublicRequest (l.usedNames.map(_.decode), l.valueNames.map(_.decode), l.extractionValue, errAccumulator.toList)
        )
 
    // 3. Can't get the actual error message

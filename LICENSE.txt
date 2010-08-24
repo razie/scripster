@@ -9,7 +9,7 @@
 This code is provided AS IS. No warranties implied nor any liabilities assumed. 
 Use at your own risk! 
 
-All code and resources in this project is copyrighted by Razvan Cojocaru, 
+All code and resources in this project are copyrighted by Razvan Cojocaru, 
 with the exception mentioned below, under the 
 Creative Commons Attribution 3.0 Unported License, 
 available at http://creativecommons.org/licenses/by/3.0/.

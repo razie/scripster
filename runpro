@@ -1,0 +1,2 @@
+java -Dscripsterpro.target.url=http://www.codewitter.com -cp ./dist/codewitter.jar:../scripster/dist/scripster-dist.jar:/host/bin/scala/lib/scala-library.jar:/host/bin/scala/lib/scala-compiler.jar razie.scripsterpro.MainScripsterPro
+

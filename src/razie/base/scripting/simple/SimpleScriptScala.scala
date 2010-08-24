@@ -174,7 +174,7 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
     // TODO nicer way to build a map from a list?
     val ret = new scala.collection.mutable.HashMap[String,Any]()
     // TODO get the value of x nicer
-    lastRequest.get.boundNames.foreach (x => {
+    lastRequest.get.valueNames.foreach (x => {
        val xx = (x -> evalExpr[Any] (x))
        println ("bound: " + xx)
        ret += (x -> evalExpr[Any] (x))
@@ -202,31 +202,31 @@ object SimpleSSSamples extends Application {
   }
   
   // simple, one time, expression
-  dontexpect (3) { 
+  expect (3) { 
     AScript("1+2").print.eval (ScriptContext(Map())) getOrElse "?"
     }
 
   // test binding variables
-  dontexpect ("12") {
+  expect ("12") {
     AScript ("a+b").print.eval (ScriptContext(Map("a" -> "1", "b" -> "2"))) getOrElse "?"
     }
 
   // test sharing variables - this is possible because populated variables end up in the context and we 
   // share the context
-  dontexpect ("12") {
+  expect ("12") {
      val ctx = ScriptContext(Map("a" -> "1", "b" -> "2"))
      AScript("val c = a+b").print.interactive (ctx)
      AScript("c").print.interactive (ctx) getOrElse "?"
      }
 
   // options
-  dontexpect (true) {
+  expect (true) {
      val ctx = ScriptContext(Map("a" -> 1, "b" -> 2))
      ctx.options ("java.lang.Sys") contains ("System")
      }
 
   // export new variables back into context
-  dontexpect ("12") {
+  expect ("12") {
      val ctx = ScriptContext(Map("a" -> "1", "b" -> "2")) 
      AScript("val c = a+b").print.interactive (ctx)
      ctx.values getOrElse ("c", "?")
@@ -234,9 +234,16 @@ object SimpleSSSamples extends Application {
 
   // test sharing defs
   expect (9) {
-     val ctx = ScriptContext(Map("a" -> "1", "b" -> "2"))
+     val ctx = ScriptContext(Map("a" -> 1, "b" -> 2))
      AScript("""def f(x: Int) = x*x""").print.interactive (ctx)
      AScript("""f (1+2)""").print.interactive (ctx) getOrElse "?"
+     }
+
+  // TOOD why can't i bind integers?
+  expect (3) {
+     val ctx = ScriptContext(Map("a" -> 1, "b" -> 2))
+     AScript("val c = a+b").print.interactive (ctx)
+     ctx.values getOrElse ("c", "?")
      }
 
 

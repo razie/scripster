@@ -178,7 +178,7 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
     // TODO nicer way to build a map from a list?
     val ret = new scala.collection.mutable.HashMap[String,Any]()
     // TODO get the value of x nicer
-    lastRequest.get.boundNames.foreach (x => {
+    lastRequest.get.valueNames.foreach (x => {
        val xx = (x -> evalExpr[Any] (x))
        println ("bound: " + xx)
        ret += (x -> evalExpr[Any] (x))
