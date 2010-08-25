@@ -1,2 +1,3 @@
-scp dist/codewitter.jar dist/scripster-dist.jar demo@cloud.razie.com:scripster/lib/
+scp dist/codewitter.jar dist/scripster-dist.jar demo@cloud1.razie.com:scripster/app/run/lib/
+scp dist/codewitter.jar dist/scripster-dist.jar demo@cloud2.razie.com:scripster/app/run/lib/
 

@@ -32,7 +32,7 @@ object Allow {
 object ApiKey {
   def validate (ak:String) {
      if (ak != "TEST")
-        error ("Opa! you need to register at http://codewitter.com/cw/register")
+        error ("Opa! you need to register at http://cw.razie.com/cw/register")
   }
 
   def genForMe () : String = "TEST"
@@ -88,7 +88,6 @@ object Audit {
 object Pro {
   def langs = "scala,java,javascript,xml,html,css,sparql,lua,php,plsql,python,sql,--------,whatever,English" 
     
-     // TODO hash like http://www.coderanch.com/t/327255/Java-General/java/generate-Unique-key
   def generateKey (email:String) : String = {
     val pri = Comms.encode("a" + Hashability.hash (email))
     val pub = Comms.encode("a" + Hashability.hash (email+System.currentTimeMillis().toString))

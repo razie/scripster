@@ -8,7 +8,8 @@ package razie.scripsterpro
 import com.razie.pub.comms._
 
 object Settings {
-  val testing = razie.Boolean(System.getProperty("scripsterpro.testing", "false"))
+  val testing  = razie.Boolean(System.getProperty("scripsterpro.testing", "false"))
+  lazy val bitlykey = System.getProperty("scripsterpro.bitlykey", "?")
  
   def nok[A] (a:A, b:A) = if (! testing) a else b
   

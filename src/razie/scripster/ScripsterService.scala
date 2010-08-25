@@ -70,7 +70,7 @@ object ScripsterService {
     
     val p = pad(lang)
     p.moreButtons = 
-      Draw.button(razie.AI("Witty"),   "javascript:scripsterJump('http://codewitter.com/cw/start?from=scripster"+j(lang,"", "", "")) :: Nil 
+      Draw.button(razie.AI("Witty"),   "javascript:scripsterJump('http://cw.razie.com/cw/start?from=scripster"+j(lang,"", "", "")) :: Nil 
 //      Draw.button(razie.AI("Witty"),   "javascript:scripsterJump('/cw/start?from=scripster"+j(lang,"", "", "")) :: Nil 
 
     if (notice != null && notice.length > 0 ) 

@@ -32,6 +32,12 @@ case class RazJsonObject (val s : String) {
   def xpa (path:String) : String = XP[Any] (path) using XpJsonSolver xpa root
 }
 
+//// TODO find/write DB 
+//trait NewShortner[T]  {
+//  def shorten  (in:T) : String
+//  def retrieve (shorted:String) : T
+//}
+  
 object Shortner {
   def shorten (in:String) : String = Settings.shorty.shorten(in)
 }
@@ -49,7 +55,7 @@ class Bitly extends Shortner {
      try {
     val enc = Comms.encode(in)
     val bitly = "http://api.bit.ly/shorten?version=2.0.1" +
-         "&login=razie&apiKey=" + RAZIE_BITLY_KEY +
+         "&login=razie&apiKey=" + Settings.bitlykey +
          "&longUrl=" + enc
     val bitret = Comms.readUrl(bitly)
     
@@ -79,5 +85,4 @@ class Bitly extends Shortner {
      }
   }
    
-   val RAZIE_BITLY_KEY="R_981929c24f36169a79ea917e3990bd01"
 }
