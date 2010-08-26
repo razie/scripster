@@ -165,7 +165,10 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
           else
              RazScript.RSSuccNoValue
         case IR.Error => {
-           val c = RazScript.RSError (lastRequest.get.err mkString "\n\r")
+           val c = 
+              if (lastRequest.get.valueNames.contains("lastException")) 
+                   RazScript.RSError (evalExpr[Exception] ("lastException").getMessage)
+              else RazScript.RSError (lastRequest.get.err mkString "\n\r")
            errAccumulator.clear
            c
         }
@@ -178,7 +181,7 @@ class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
     // TODO nicer way to build a map from a list?
     val ret = new scala.collection.mutable.HashMap[String,Any]()
     // TODO get the value of x nicer
-    lastRequest.get.valueNames.foreach (x => {
+    lastRequest.get.valueNames.filter(_ != "lastException").foreach (x => {
        val xx = (x -> evalExpr[Any] (x))
        println ("bound: " + xx)
        ret += (x -> evalExpr[Any] (x))

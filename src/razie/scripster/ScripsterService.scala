@@ -41,7 +41,8 @@ object ScripsterService {
   
   @SoaMethod (descr="exec a script", args=Array("sessionId", "language", "script"))
   def run (sessionId:String, language:String, script:String) = {
-    val ret = Scripster.exec (language, script, sessionId)
+    val ret = Scripster.execWithin (10000) (language, script, sessionId)
+    
     ret._1 match {
        case s1@RazScript.RSSucc(res) => Draw toString res.toString
        case s2@RazScript.RSSuccNoValue => Draw toString "Scripster.Status:...ok"

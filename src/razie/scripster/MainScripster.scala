@@ -16,14 +16,16 @@ import com.razie.pub.base.ExecutionContext
 import razie.base._
 import razie.base.scripting._
 
-object MainScripster extends Application {
-   Scripster.createServer(4445)
+object MainScripster {
+   def main (argv:Array[String]) {
+     Scripster.createServer(4445)
    
-   // warm up the interpreter while you move your hands... :)
-   new java.lang.Thread ( 
-         new java.lang.Runnable { 
-            def run() { 
-               new ScriptScala ("1+2").eval(ScriptContextImpl.global) 
-               }}
-         ).start
+     // warm up the interpreter while you move your hands... :)
+     new java.lang.Thread ( 
+           new java.lang.Runnable { 
+              def run() { 
+                 new ScriptScala ("1+2").eval(ScriptContextImpl.global) 
+                 }}
+           ).start
+     }
 }

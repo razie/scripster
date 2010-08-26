@@ -112,13 +112,19 @@ object Scripster {
 //     ret
       texec (lang, script, sessionId)
    }
+   def execWithin (msec:Int) (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
+     (razie.Threads.forkjoinWithin[String,(RazScript.RSResult[Any], AnyRef)] (msec) (List(script)) { 
+        Scripster.exec (lang, _, sessionId)
+        }).toList.firstOption.getOrElse((RazScript.RSError("UNKNOWN"), null))
+   }
    
    /** this runs in the current thread
     * 
     * @return (complex code with info , just null or value) 
     */
    def texec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
-     val ret = Sessions.get (sessionId).map (session=> {
+      val ret = try {
+     Sessions.get (sessionId).map (session=> {
      session accumulate script
      
      val s = ScriptFactory.make (lang, session.script)
@@ -135,9 +141,10 @@ object Scripster {
           (s2, null)
        }
        case s3@RazScript.RSError(err) => {
-          razie.Debug ("SError...: "+err)
+          val errmsg = err
+          razie.Debug ("SError...: "+errmsg)
           session.clear
-          (s3, err)
+          (s3, errmsg)
        }
        case s4@RazScript.RSIncomplete => {
           razie.Debug ("SIncomplete...accumulating: "+script)
@@ -158,7 +165,14 @@ object Scripster {
      }
      }
      ).getOrElse((RazScript.RSError("No session found id="+sessionId), "No session found id="+sessionId))
-     
+      } catch {
+          case e:Exception => {
+         razie.Log ("While processing script: " + script, e)
+            val r = "ERROR: " + e.getMessage 
+            (RazScript.RSError(r), null)
+          }
+      }
+          
      Audit.recResult(lang, "", "", "", script, ""+ret)
      
      razie.Log ("result=" + ret)
