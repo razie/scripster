@@ -344,7 +344,7 @@ object CodeWitterService {
   // script is given when coming from scripster
   @SoaMethod (descr="exec a script", args=Array("lang", "script"))
   @SoaMethodSink
-  def start (lang:String, script:String) = {
+  def start (_lang:String, script:String) = {
     val notice1 = Comms.readStream (this.getClass().getResource("/public/scripsterpro/scripsterpro-capture.html").openStream)
     val notice2 = Comms.readStream (this.getClass().getResource("/public/scripsterpro/scripsterpro-bottom.html").openStream)
     val blahblah = Comms.readStream (this.getClass().getResource("/public/scripsterpro/scripsterpro-blahblah.html").openStream)
@@ -352,7 +352,8 @@ object CodeWitterService {
     val next = new Sati(Pro.BASESVCNAME, razie.AI ("capture"), razie.AA("api_key", ApiKey.genForMe, "script", if(script==null)"" else Comms.encode(script)))
     
     Audit.recStart1 ()
-    
+
+    val lang = if (_lang == null || _lang == "") "scala" else _lang
     Draw seq (
       Draw html notice1,
       Draw.form(formTitle, next, razie.AA ("lang:String", lang, "css:String", "dark", "email:String","anonymous Joe")).

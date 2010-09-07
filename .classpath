@@ -4,14 +4,11 @@
 	<classpathentry kind="src" path="test_src"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/20widgets"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalacompiler"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalaswing"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/20widgets-swing"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/razbase"/>
 	<classpathentry kind="lib" path="lib/jline-0_9_5.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalatest"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/razweb"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
