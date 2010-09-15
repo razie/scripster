@@ -115,7 +115,7 @@ object Scripster {
    def execWithin (msec:Int) (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
      (razie.Threads.forkjoinWithin[String,(RazScript.RSResult[Any], AnyRef)] (msec) (List(script)) { 
         Scripster.exec (lang, _, sessionId)
-        }).toList.firstOption.getOrElse((RazScript.RSError("UNKNOWN"), null))
+        }).toList.headOption.getOrElse((RazScript.RSError("UNKNOWN"), null))
    }
    
    /** this runs in the current thread

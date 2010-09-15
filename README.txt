@@ -16,6 +16,10 @@ Why?
 ----
 So anyone can interact with a running application, having access to all the application's objects. Obviously, we don't want 'anyone' to have this kind of access, so you will no doubt take steps to protect this.
 
+What is so special about the scrispter? It has full syntax coloring and content assist, for starters! 
+It can be embedded into any application and shares the same port for telnet as well as web access...
+
+
 Details
 -------
 The code is generally self-documented. Keep your eyes out for package.html and similar stuff.
@@ -66,16 +70,24 @@ Here's how to build it:
    done
    ant -f scripster/build.xml dist
 
-7. Eclipse setup
+7. sbt build
+
+   for ff in "razbase 20widgets 20widgets-swing razweb scripster"
+   do
+      cd ${w}/$ff
+      sbt update publish-local
+   done
+
+8. Eclipse setup
 
    * install the scala 2.8 plugin and the svn plugin
    * download a 2.8 scala distribution someplace, i.e. bin/scala - will need the complier.jar
    * download a 2.8-compatible scalatest distribution someplace - will need the library 
    
-7.1. create the projects
+8.1. create the projects
    Create a project for each of the above: razbase, razxml, 20widgets, razweb, scripster, gremlins
 
-7.2. fix library dependencies
+8.2. fix library dependencies
 
    Create two User Libraries (Window/Preferences/Java/Build Path/User Libraries):
    * scalatest - containing the scalatest-0.9.5.jar file or whichever is latest. Make sure you have the version that's compiled for scala 2.8

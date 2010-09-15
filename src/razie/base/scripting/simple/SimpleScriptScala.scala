@@ -6,7 +6,7 @@
 package razie.base.scripting.simple
 
 import scala.tools.{nsc => nsc}
-import scala.tools.nsc.{ InterpreterResults => IR }
+import scala.tools.nsc.{ InterpreterResults => IR, Settings }
 
 /**
  * nice result specification for a script runner
@@ -72,19 +72,70 @@ object SS {
   }
 
   // make a custom parser
+  // see http://gist.github.com/404272
   def mkParser (errLogger: String => Unit) = {
-    val env = {
-       val set = new nsc.Settings(errLogger)
-  //     set.classpath.value += java.io.File.pathSeparator + System.getProperty ("java.class.path")
-       set.usejavacp.value = true
-       set
+    if (SS.getClass.getClassLoader.getResource("app.class.path") != null) {
+      val settings = new Settings(errLogger)
+      settings embeddedDefaults getClass.getClassLoader
+      println (">>>>>>>>>>>>>>" + settings.classpath.value)
+      println (">>>>>>>>>>>>>>" + settings.bootclasspath.value)
+
+      val p = new RaziesInterpreter (settings) {
+        override protected def parentClassLoader = SS.getClass.getClassLoader
+        }
+      p.setContextClassLoader  
+      p
+    } else {
+      val env = new nsc.Settings(errLogger)
+      env.usejavacp.value = true
+  
+      val p = new RaziesInterpreter (env) 
+      p.setContextClassLoader  
+      p
     }
-  
-    val p = new RaziesInterpreter (env) 
-  
-    p.setContextClassLoader  
-    p
   }
+}
+
+import java.io.File
+import File.{pathSeparator => / }
+import scala.io.Source
+
+class Holder { var value: Any = _ }
+
+import scala.tools.nsc.{GenericRunnerSettings, Interpreter, Settings}
+
+
+object Foo {
+  def rev (s:String) = s.split(":").reverse.mkString(":")
+
+  def mksettings (f: String=>Unit) = {
+    val settings = new Settings(f)
+    val loader = getClass.getClassLoader
+    settings.classpath.value = 
+      "/home/razvanc/wsideaj/scripster/target/scala_2.8.0/classes"+
+      classpath("app", loader).getOrElse(error("Error: could not find application classpath"))
+    settings.bootclasspath.value = 
+      "/home/razvanc/wsideaj/scripster/target/scala_2.8.0/classes" + 
+      settings.bootclasspath.value + / + 
+      classpath("boot", loader).getOrElse(error("Error: could not find boot classpath"))
+    println (">>>>>>>>>>>>>>" + settings.classpath.value)
+    println (">>>>>>>>>>>>>>" + settings.bootclasspath.value)
+    settings
+  }
+
+  val inter = new Interpreter(mksettings(println)) {
+    override protected def parentClassLoader = Foo.this.getClass.getClassLoader
+    }
+
+/*  def eval(code: String): Any = {
+    val h = new Holder
+    inter.bind("$r_", h.getClass.getName, h)
+    val r = inter.interpret("$r_.value = " + code)
+    h.value
+  }
+ */                                       
+  private def classpath(name: String, loader: ClassLoader) =
+    Option(loader.getResource(name + ".class.path")).map { cp => Source.fromURL(cp).mkString }
 }
 
 /** an interpreted scala script */
