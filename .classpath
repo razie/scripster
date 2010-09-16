@@ -12,3 +12,4 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/scalatest"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
+
