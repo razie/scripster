@@ -6,31 +6,6 @@
  *  Copyright (c) Razvan Cojocaru, 2007+, Creative Commons Attribution 3.0
  */
 
-What's this?
-------------
-Interactive scripting pad for scala. It is available over telnet, http and swing.
-
-Read the guide at http://wiki.homecloud.ca/scripster
-
-Why?
-----
-So anyone can interact with a running application, having access to all the application's objects. Obviously, we don't want 'anyone' to have this kind of access, so you will no doubt take steps to protect this.
-
-What is so special about the scrispter? It has full syntax coloring and content assist, for starters! 
-It can be embedded into any application and shares the same port for telnet as well as web access...
-
-
-Details
--------
-The code is generally self-documented. Keep your eyes out for package.html and similar stuff.
-
-
-Roadmap
--------
-May add some more scripting languages in the future but otherwise I don't think this will evolve.
-
-It may also get nicer.
-
 Developing & Building
 ---------------------
 
@@ -55,28 +30,29 @@ Here's how to build it:
   cd ${w}/20widgets/src/public
   git clone git@github.com:razie/CodeMirror.git
 
-4. edit ${w}/razbase/razie.properties and set the w property to the workspace
-
-5. build all and create the dist jar file:
-
-   cd ${w}/scripster
-   ant clean-all build-all dist
-
-6. If you're having problems with out of memory, you have to build each:
-
-   for ff in "razbase 20widgets 20widgets-swing razweb scripster"
-   do
-      ant -f $f/build.xml clean build jar-only
-   done
-   ant -f scripster/build.xml dist
-
-7. sbt build
+4. sbt build
 
    for ff in "razbase 20widgets 20widgets-swing razweb scripster"
    do
       cd ${w}/$ff
       sbt update publish-local
    done
+
+5. ant build
+-. edit ${w}/razbase/razie.properties and set the w property to the workspace
+
+-. build all and create the dist jar file:
+
+   cd ${w}/scripster
+   ant clean-all build-all dist
+
+-. If you're having problems with out of memory, you have to build each:
+
+   for ff in "razbase 20widgets 20widgets-swing razweb scripster"
+   do
+      ant -f $f/build.xml clean build jar-only
+   done
+   ant -f scripster/build.xml dist
 
 8. Eclipse setup
 

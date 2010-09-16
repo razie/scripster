@@ -25,7 +25,7 @@ import razie.base.scripting._
  * If all you need in an app is the scripster, create one on a port of your choice, with no extra services.
  * 
  * To customize interaction, you can mess with the Repl - that's the actual interaction with the REPL
- * 
+ *
  * Further customization options below.
  * 
  * To limit the objects available to clients, please reset the sharedContext:
@@ -103,21 +103,29 @@ object Scripster {
       }
    }
 
-   /** session-based execution 
-    * 
-    * @return (complex code with info , just null or value) 
-    */
-   def exec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
+  /** create new session - not neccessary to just run scripts */
+  def createSession (lang:String, ctx:ScriptContext = sharedContext) = 
+    Sessions.create(ctx, lang).id
+
+  /** reset an existing session */   
+  def reset (sessionId:String) = Sessions.get(sessionId).map(_.clear)
+
+  /** session-based execution 
+   * 
+   * @return (complex code with info , just null or value) 
+  */
+  def exec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
 //     var ret : (RazScript.RSResult[Any], AnyRef) = (RazScript.RSUnsupported ("Scripster.exec() TODO"), null)
 //     ret
-      texec (lang, script, sessionId)
-   }
+     texec (lang, script, sessionId)
+  }
+
    def execWithin (msec:Int) (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
      (razie.Threads.forkjoinWithin[String,(RazScript.RSResult[Any], AnyRef)] (msec) (List(script)) { 
         Scripster.exec (lang, _, sessionId)
         }).toList.headOption.getOrElse((RazScript.RSError("UNKNOWN"), null))
    }
-   
+
    /** this runs in the current thread
     * 
     * @return (complex code with info , just null or value) 

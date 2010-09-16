@@ -80,22 +80,20 @@ object ScripsterService {
        razie.Draw seq (title, p)
   }
 
-  @SoaMethod (descr="exec a script", args=Array("lang"))
+  @SoaMethod (descr="create a simple session", args=Array("lang"))
   def simpleSession (lang:String) = {
-     val c = Sessions.create(Scripster.sharedContext , lang)
-     new razie.draw.widgets.ScriptPad (lang=lang, run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, simple=true)
+     val id = Scripster.createSession(lang, Scripster.sharedContext)
+     new razie.draw.widgets.ScriptPad (lang=lang, run=mkATI(id) _, options=soptions(id) _, reset=mkRESET(id) _, simple=true)
   }
 
-  @SoaMethod (descr="exec a script", args=Array("lang"))
+  @SoaMethod (descr="create an applet session", args=Array("lang"))
   def appletSession (lang:String) = {
-     val c = Sessions.create(Scripster.sharedContext , lang)
-     new razie.draw.widgets.ScriptPad (lang=lang, run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, applet=true)
+     val id = Scripster.createSession(lang, Scripster.sharedContext)
+     new razie.draw.widgets.ScriptPad (lang=lang, run=mkATI(id) _, options=soptions(id) _, reset=mkRESET(id) _, applet=true)
   }
 
-  @SoaMethod (descr="exec a script", args=Array("sessionId"))
-  def reset (sessionId:String) = {
-     Sessions.get(sessionId).map(_.clear)
-  }
+  @SoaMethod (descr="reset the session", args=Array("sessionId"))
+  def reset (sessionId:String) = Scripster reset sessionId
 
   def mkATI (sessionId:String)() : ActionToInvoke = {
     new ServiceActionToInvoke("scripting", cmdRSCRIPT, "sessionId", sessionId) {
@@ -136,14 +134,15 @@ object Sessions {
   }
 
   def create (parent:ScriptContext, lang:String) = { 
-     
     clean
-
     if (map.size >= max) {
-    val now = System.currentTimeMillis
-       Audit.recSessionFail (lang)
-       error ("too many sessions - come back...later, sessions=" + map.size + 
-              "  - patience, one expires in: " + (life-(now-(map.values.map(_.time).foldRight(now)((x,y)=>if (x<y)x else y))))/(1000L) + "sec" )
+      val now = System.currentTimeMillis
+      Audit.recSessionFail (lang)
+      error ("too many sessions - come back...later, sessions=" + 
+             map.size + 
+             "  - patience, one expires in: " + 
+             (life-(now-(map.values.map(_.time).foldRight(now)(
+               (x,y)=>if (x<y)x else y))))/(1000L) + "sec" )
     }
        
     Audit.recSession (lang)

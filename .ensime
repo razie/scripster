@@ -1,0 +1,11 @@
+;; This config was generated using ensime-config-gen. Feel free to customize its contents manually. 
+
+(
+
+:server-root "/home/razvanc/bin/ensime_2.8.0-0.2.5/"
+
+:project-package "razie.scripster"
+
+:use-sbt t
+
+)

@@ -60,16 +60,18 @@ object SS {
     // TODO make this work for any managed classloader - it's hardcoded for sbt
     val p = {
       if (SS.getClass.getClassLoader.getResource("app.class.path") != null) {
+        razie.Debug ("Scripster using app.class.path and boot.class.path")
         // see http://gist.github.com/404272
         val settings = new nsc.Settings(errLogger)
         settings embeddedDefaults getClass.getClassLoader
-        razie.Debug ("Scripster using classpath: " + settings.classpath.value)
-        razie.Debug ("Scripster using boot classpath: " + settings.bootclasspath.value)
+        //razie.Debug ("Scripster using classpath: " + settings.classpath.value)
+        //razie.Debug ("Scripster using boot classpath: " + settings.bootclasspath.value)
 
         new RaziesInterpreter(settings) {
           override protected def parentClassLoader = SS.getClass.getClassLoader
         }
       } else {
+        razie.Debug ("Scripster using java classpath")
         val env = new nsc.Settings(errLogger)
         env.usejavacp.value = true
 
@@ -195,7 +197,7 @@ class RaziesInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
     // TODO get the value of x nicer
     lastRequest.get.valueNames.filter(_ != "lastException").foreach(x => {
       val xx = (x -> evalExpr[Any](x))
-      println("bound: " + xx)
+      razie.Debug("bound: " + xx)
       ret += (x -> evalExpr[Any](x))
     })
     ret

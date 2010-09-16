@@ -56,14 +56,16 @@ def add (i:Int*) = {
   def testScripster = expect (3) {
      import razie.scripster._
      val c = Sessions.create (Scripster.sharedContext , "scala")
-     Scripster.execWithin (4000) ("scala", "1+2", c.id)._2
+     Scripster.execWithin (10000) ("scala", "1+2", c.id)._2
   }
   
   def testTimeout = expect (true) {
      import razie.scripster._
      val c = Sessions.create (Scripster.sharedContext , "scala")
      razie.Timer {
+        try {
         Scripster.execWithin (5000) ("scala", "while(true) print(\"\")", c.id)
+        } catch { case _ => ; }
      } ._1 < 6000
   }
 }
