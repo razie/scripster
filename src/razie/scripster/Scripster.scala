@@ -51,7 +51,7 @@ object Scripster {
    // hook to the web/telnet server
    private var contents : CS = null
    
-   ScriptFactory.init (new ScriptFactoryScala (ScriptFactory.singleton, true))
+   ScriptFactory.init (new ScalaScriptFactory(ScriptFactory.singleton, true))
 
    /** use this to attach the REPL to an existing server */
    def attachTo (ls:LightServer) = {

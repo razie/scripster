@@ -6,9 +6,10 @@
 package razie.base.scripting
 
 import com.razie.pub.base._
+import razie.base.ActionContext
 
 /** add capability to support scala scripts */
-class ScriptFactoryScala (val other:ScriptFactory, val dflt:Boolean) extends ScriptFactory {
+class ScalaScriptFactory (val other:ScriptFactory, val dflt:Boolean) extends ScriptFactory {
 
    override def makeImpl (lang:String, s:String) = {
      (lang, dflt) match {
@@ -18,5 +19,8 @@ class ScriptFactoryScala (val other:ScriptFactory, val dflt:Boolean) extends Scr
          else new ScriptScala(s)
      }
   }
+   
+  override def mkContextImpl(lang:String, parent: ActionContext) : ScriptContext = 
+    new razie.base.scripting.ScalaScriptContext (parent)
 }
 
