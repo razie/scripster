@@ -121,9 +121,13 @@ object Scripster {
   }
 
    def execWithin (msec:Int) (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
+     val x = 
      (razie.Threads.forkjoinWithin[String,(RazScript.RSResult[Any], AnyRef)] (msec) (List(script)) { 
         Scripster.exec (lang, _, sessionId)
-        }).toList.headOption.getOrElse((RazScript.RSError("UNKNOWN"), null))
+        })
+
+     if (x != null && x.size > 0 && x.head._1 != null) x.head
+     else ( RazScript.RSError("UNKNOWN - Probably did not finish in time..."), null)
    }
 
    /** this runs in the current thread

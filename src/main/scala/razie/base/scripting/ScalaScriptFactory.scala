@@ -8,19 +8,18 @@ package razie.base.scripting
 import com.razie.pub.base._
 import razie.base.ActionContext
 
-/** add capability to support scala scripts */
-class ScalaScriptFactory (val other:ScriptFactory, val dflt:Boolean) extends ScriptFactory {
+/** add capability to support scala scripts. Note that scala scripts need scala contexts */
+class ScalaScriptFactory(val other: ScriptFactory, val dflt: Boolean) extends ScriptFactory {
 
-   override def makeImpl (lang:String, s:String) = {
-     (lang, dflt) match {
-       case ("scala", _) | ("text/scala", _) | (null, true) => new ScalaScript(s)
-       case _ => 
-         if (other != null) other.makeImpl (lang, s) 
-         else new ScalaScript(s)
-     }
+  override def makeImpl(lang: String, s: String) = {
+    (lang, dflt) match {
+      case ("scala", _) | ("text/scala", _) | (null, true) => new ScalaScript(s)
+      case _ =>
+        if (other != null) other.makeImpl (lang, s)
+        else new ScalaScript(s)
+    }
   }
-   
-  override def mkContextImpl(lang:String, parent: ActionContext) : ScriptContext = 
-    new razie.base.scripting.ScalaScriptContext (parent)
-}
 
+  override def mkContextImpl(lang: String, parent: ActionContext): ScriptContext =
+    new razie.base.scripting.ScalaScriptContext(parent)
+}

@@ -15,42 +15,42 @@ import razie.base._
  */
 class TimeOfDay {
 
-        if (aivalues == null) 
-          aivalues = {
-             for (i <- 0 to values.length)
-                yield values()(i)
-        } . toArray
+  if (aivalues == null)
+    aivalues = {
+      for (i <- 0 to values.length)
+        yield values()(i)
+    }.toArray
 
-    def tags() = TimeOfDay.TAGS
+  def tags() = TimeOfDay.TAGS
 
-    def values() = aivalues
+  def values() = aivalues
 
-    def value() = {
-        val dt = new Date()
-        new RangeSel[String]().rangeSel(dt.getHours(), TimeOfDay.rangei, TimeOfDay.values, dflt);
-    }
+  def value() = {
+    val dt = new Date()
+    RangeSel.rangeSel(dt.getHours(), TimeOfDay.rangei, TimeOfDay.values, dflt);
+  }
 
-    def aivalue() = {
-        val dt = new Date()
-        new RangeSel[ActionItem]().rangeSel(dt.getHours(), TimeOfDay.rangei, aivalues, aidflt);
-    }
+  def aivalue() = {
+    val dt = new Date()
+    RangeSel.rangeSel(dt.getHours(), TimeOfDay.rangei, aivalues, aidflt);
+  }
 
-    val dflt   = "?";
+  val dflt = "?";
 
-    var aivalues : Array[ActionItem] = null
-    val aidflt = new ActionItem("?");
+  var aivalues: Array[ActionItem] = null
+  val aidflt = new ActionItem("?");
 
 }
 
 object TimeOfDay {
 
-//    def calcvalue() : String = {new TimeOfDay().value();}
-    
-    val TAGS = Array( "time" )
+  //    def calcvalue() : String = {new TimeOfDay().value();}
 
-    val rangei:Array[Array[Int]] = Array( Array( 0, 6 ), Array( 7, 11 ), Array( 12, 19 ), Array( 20, 23))
-    val values = Array( "night", "morning", "day", "evening" )
+  val TAGS = Array("time")
 
-   val ranges : Array[Array[String]] = Array( Array( "0", "6", "night" ), Array( "7", "11", "morning" ), Array( "12", "18", "day" ),
-            Array( "19", "23", "evening" ))
+  val rangei: Array[Array[Int]] = Array(Array(0, 6), Array(7, 11), Array(12, 19), Array(20, 23))
+  val values = Array("night", "morning", "day", "evening")
+
+  val ranges: Array[Array[String]] = Array(Array("0", "6", "night"), Array("7", "11", "morning"), Array("12", "18", "day"),
+    Array("19", "23", "evening"))
 }
