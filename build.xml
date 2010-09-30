@@ -63,7 +63,7 @@
         </java>
     </target>
 
-    <target name="dist">
+    <target name="dist-ant">
         <delete  dir="${d}"/>
         <mkdir  dir="${d}"/>
         <mkdir  dir="${d}/lib"/>
@@ -113,7 +113,59 @@
 
     </target>
 
-    <target name="clean-dist" depends="clean-all,build-all,dist" />
+    <target name="dist-sbt">
+        <delete  dir="${d}"/>
+        <mkdir  dir="${d}"/>
+        <mkdir  dir="${d}/lib"/>
+
+        <property name="sb" value="target/scala_2.8.1.RC1/classes"/>
+
+        <tstamp>
+           <format property="stamp" pattern="yyyy/MM/dd hh:mm aa" />
+        </tstamp>
+        <echo message="${stamp}" file="timestamp.txt"/>
+
+        <jar file="timestamp.txt"
+             destfile="${d}/scripster-dist.jar"/>
+        <jar  basedir="${w}/razbase/${sb}"
+             destfile="${d}/scripster-dist.jar" update="true" />
+        <jar  basedir="${w}/20widgets/${sb}"
+             destfile="${d}/scripster-dist.jar" update="true" />
+        <jar  basedir="${w}/20widgets-swing/${sb}"
+             destfile="${d}/scripster-dist.jar" update="true" />
+        <jar  basedir="${w}/razweb/${sb}"
+             destfile="${d}/scripster-dist.jar" update="true" />
+        <jar  basedir="${w}/scripster/${sb}"
+             destfile="${d}/scripster-dist.jar" update="true" />
+        <jar destfile="${d}/scripster-dist.jar" update="true">
+            <zipfileset src="${w}/razbase/lib/json.jar"/>
+            <zipfileset src="${w}/razweb/lib/mime-util.jar"/> 
+            <zipfileset src="${w}/razxml/dist/razxml.jar"/>
+            <zipfileset src="${w}/20widgets-swing/lib/jsyntaxpane-0.9.5-b29.jar"/>
+        </jar>
+
+        <tstamp>
+           <format property="stamp" pattern="yyyy/MM/dd hh:mm aa" />
+        </tstamp>
+        <echo message="${stamp}" file="timestamp.txt"/>
+
+        <jar file="timestamp.txt"
+             destfile="${d}/codewitter.jar"/>
+        <jar basedir="${w}/razpub/bin"
+             destfile="${d}/codewitter.jar" update="true" />
+        <jar destfile="${d}/codewitter.jar" update="true">
+            <zipfileset src="${w}/razpub/lib/log4j-1.2.7.jar"/>
+        </jar>
+
+
+        <mkdir dir="${d}/lib" />
+        <copy todir="${d}/lib" file="${scala.home}/lib/scala-compiler.jar" />
+        <copy todir="${d}/lib" file="${scala.home}/lib/scala-swing.jar" />
+        <copy todir="${d}/lib" file="../scripster/lib/jline-0_9_5.jar" />
+
+    </target>
+
+    <target name="clean-dist" depends="clean-all,build-all,dist-ant" />
     <target name="dist-all">
         <ant target="jar-only" dir="${w}/razbase/"/>
         <ant target="jar-only" dir="${w}/20widgets/"/>

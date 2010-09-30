@@ -1,5 +1,6 @@
 import sbt._
 
+// TODO repackaging, see http://github.com/jboner/akka/blob/master/project/build/AkkaProject.scala
 class PScripster(info: ProjectInfo) extends DefaultProject(info) {
   val SCALAVER = "2.8.1.RC1"
     
