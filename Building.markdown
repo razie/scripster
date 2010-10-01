@@ -20,26 +20,21 @@ Here's how to build it:
 
     cd ${w}
     git clone git@github.com:razie/razbase.git
-    git clone git@github.com:razie/razxml.git
-    git clone git@github.com:razie/20widgets.git
-    git clone git@github.com:razie/20widgets-swing.git
-    git clone git@github.com:razie/razweb.git
     git clone git@github.com:razie/scripster.git
 
 3.1. hack a bit - have to checkout my fork of CodeMirror in this specific location
 
-   cd ${w}/20widgets/src/public
+   cd ${w}/razbase/20widgets/src/resources/public
    git clone git@github.com:razie/CodeMirror.git
 
 4. sbt build
 
-    for ff in "razbase 20widgets 20widgets-swing razweb scripster"
-    do
-       cd ${w}/$ff
-       sbt update publish-local
-    done
+    cd ${w}/razbase
+    sbt update publish-local
+    cd ${w}/scripster
+    sbt update publish-local
 
-5. ant build
+5. ant build NOTE that this doesn't work anymore and is not maintained!
 -. edit ${w}/razbase/razie.properties and set the w property to the workspace
 
 -. build all and create the dist jar file:

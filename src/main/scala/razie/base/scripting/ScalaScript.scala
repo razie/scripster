@@ -12,17 +12,16 @@ import scala.tools.nsc.{ InterpreterResults => IR }
 /** will cache the environment, including the parser instance. 
  * That way things defined in one script are visible to the next */
 class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl(parent) {
-  val p = ScalaScript mkParser err
-  //  val soon = razie.Threads.promise {SS mkParser err}
-  //  lazy val p = soon.get() // blocking call on Future
+//  val p = ScalaScript mkParser err
+    val soon = razie.Threads.promise {ScalaScript mkParser err}
+    lazy val p = soon.get() // blocking call on Future
+  lazy val c = new nsc.interpreter.Completion(p)
 
   def this(parent: ActionContext, args: Any*) = {
     this(parent)
     // TODO I'm loosing the scala types. JavaAttrAccessImpl needs to become scala
     setAttr(args map (_.asInstanceOf[AnyRef]): _*)
   }
-
-  lazy val c = new nsc.interpreter.Completion(p)
 
   /** content assist options */
   override def options(scr: String): java.util.List[String] = {
