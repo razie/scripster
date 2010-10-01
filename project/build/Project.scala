@@ -2,6 +2,11 @@ import sbt._
 
 // TODO repackaging, see http://github.com/jboner/akka/blob/master/project/build/AkkaProject.scala
 class Project(info: ProjectInfo) extends DefaultProject(info) {
+
+  override def managedStyle = ManagedStyle.Maven
+  val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/snapshots/"
+  Credentials(Path.userHome / ".ivy2.credentials", log)
+      
   val SCALAVER = "2.8.1.RC1"
   val RAZBASEVER = "0.1-SNAPSHOT"
     
