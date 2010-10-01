@@ -1,7 +1,7 @@
 import sbt._
 
 // TODO repackaging, see http://github.com/jboner/akka/blob/master/project/build/AkkaProject.scala
-class PScripster(info: ProjectInfo) extends DefaultProject(info) {
+class Project(info: ProjectInfo) extends DefaultProject(info) {
   val SCALAVER = "2.8.1.RC1"
   val RAZBASEVER = "0.1-SNAPSHOT"
     
@@ -14,9 +14,6 @@ class PScripster(info: ProjectInfo) extends DefaultProject(info) {
   val scalazCore = "com.googlecode.scalaz" % "scalaz-core_2.8.0" % "5.0"
 
   val razBase = "com.razie" %% "razbase"         % RAZBASEVER
-  val w20     = "com.razie" %% "20widgets"       % RAZBASEVER
-  val w20s    = "com.razie" %% "20widgets-swing" % RAZBASEVER
-  val razWeb  = "com.razie" %% "razweb"          % RAZBASEVER
 
   override def unmanagedClasspath = 
     super.unmanagedClasspath +++ 
