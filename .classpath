@@ -15,5 +15,6 @@
 	<classpathentry kind="lib" path="lib_managed/scala_2.8.1.RC2/compile/razweb_2.8.1.RC2-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib_managed/scala_2.8.1.RC2/compile/scala-swing-2.8.1.RC1.jar"/>
 	<classpathentry kind="lib" path="lib_managed/scala_2.8.1.RC2/compile/scalatest-1.2.jar"/>
+	<classpathentry kind="lib" path="lib_managed/scala_2.8.1.RC2/compile/json-20090211.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
