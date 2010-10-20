@@ -13,8 +13,13 @@ import scala.tools.nsc.{ InterpreterResults => IR }
  * That way things defined in one script are visible to the next */
 class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl(parent) {
 //  val p = ScalaScript mkParser err
-    val soon = razie.Threads.promise {ScalaScript mkParser err}
-    lazy val p = soon.get() // blocking call on Future
+  val soon = razie.Threads.promise {
+    val ppp = ScalaScript mkParser err
+    ppp.evalExpr[Any]("1+2") // prime the parser
+    ppp
+    }
+  lazy val p = soon.get() // blocking call on Future
+  
   lazy val c = new nsc.interpreter.Completion(p)
 
   def this(parent: ActionContext, args: Any*) = {

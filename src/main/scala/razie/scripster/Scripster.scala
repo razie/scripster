@@ -125,7 +125,7 @@ object Scripster {
      (razie.Threads.forkjoinWithin[String,(RazScript.RSResult[Any], AnyRef)] (msec) (List(script)) { 
         Scripster.exec (lang, _, sessionId)
         })
-
+println ("X ========= " + x)
      if (x != null && x.size > 0 && x.head._1 != null) x.head
      else ( RazScript.RSError("UNKNOWN - Probably did not finish in time..."), null)
    }

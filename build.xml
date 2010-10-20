@@ -5,49 +5,6 @@
     <property name="d" value="./dist"/>
     <import   file="${w}/razbase/base-build.xml"/>
 
-    <path id="depy.path">
-        <pathelement location="../razbase/bin/"/>
-        <pathelement location="../razbase/lib/json.jar"/>
-        <pathelement location="../20widgets/bin/"/>
-        <pathelement location="../20widgets-swing/bin/"/>
-        <pathelement location="../razweb/bin/"/>
-        <pathelement location="../razweb/lib/mime-util.jar"/>
-        <pathelement location="../scripster/lib/jline-0_9_5.jar"/>
-        <pathelement location="${scala.home}/lib/scala-library.jar"/>
-        <pathelement location="${scala.home}/lib/scala-compiler.jar"/>
-        <pathelement location="${scala.home}/lib/scala-swing.jar"/>
-    </path>
-
-    <target name="clean-all">
-        <ant target="clean" dir="${w}/razbase/"/>
-        <ant target="clean" dir="${w}/20widgets/"/>
-        <ant target="clean" dir="${w}/20widgets-swing/"/>
-        <ant target="clean" dir="${w}/razweb/"/>
-        <ant target="clean" dir="${w}/scripster/"/>
-    </target>
-
-    <target name="build-all">
-        <ant target="build" dir="${w}/razbase/"/>
-        <ant target="build" dir="${w}/20widgets/"/>
-        <ant target="build" dir="${w}/20widgets-swing/"/>
-        <ant target="build" dir="${w}/razweb/"/>
-        <ant target="build" dir="${w}/scripster/"/>
-
-        <ant target="jar-only" dir="${w}/razbase/"/>
-        <ant target="jar-only" dir="${w}/20widgets/"/>
-        <ant target="jar-only" dir="${w}/20widgets-swing/"/>
-        <ant target="jar-only" dir="${w}/razweb/"/>
-        <ant target="jar-only" dir="${w}/scripster/"/>
-    </target>
-
-    <target name="run">
-        <echo message="Running ${ant.project.name}: ${ant.file}"/>
-
-        <java classname="razie.scripster.MainSwingScripster">
-            <classpath refid="test.classpath" />
-        </java>
-    </target>
-
     <path id="rundist.path">
         <pathelement location="${d}/scripster-dist.jar"/>
         <pathelement location="${scala.home}/lib/scala-library.jar"/>
@@ -63,10 +20,13 @@
         </java>
     </target>
 
-    <target name="dist-ant">
+    <target name="dist">
         <delete  dir="${d}"/>
         <mkdir  dir="${d}"/>
         <mkdir  dir="${d}/lib"/>
+
+        <property name="sb" value="target/scala_2.8.1.RC2/classes"/>
+        <property name="sbj" value="${w}/scripster/lib_managed/scala_2.8.1.RC2/compile"/>
 
         <tstamp>
            <format property="stamp" pattern="yyyy/MM/dd hh:mm aa" />
@@ -75,21 +35,18 @@
 
         <jar file="timestamp.txt"
              destfile="${d}/scripster-dist.jar"/>
-        <jar  basedir="${w}/razbase/bin"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/20widgets/bin"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/20widgets-swing/bin"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/razweb/bin"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/scripster/bin"
-             destfile="${d}/scripster-dist.jar" update="true" />
+        <jar  destfile="${d}/scripster-dist.jar" update="true">
+            <zipfileset src="${sbj}/20widgets_2.8.1.RC2-0.1-SNAPSHOT.jar"/>
+            <zipfileset src="${sbj}/20widgets-swing_2.8.1.RC2-0.1-SNAPSHOT.jar"/>
+            <zipfileset src="${sbj}/base_2.8.1.RC2-0.1-SNAPSHOT.jar"/>
+            <zipfileset src="${sbj}/razweb_2.8.1.RC2-0.1-SNAPSHOT.jar"/>
+            <zipfileset src="${sbj}/razweb_2.8.1.RC2-0.1-SNAPSHOT.jar"/>
+            <zipfileset src="${w}/scripster/target/scala_2.8.1.RC2/scripster_2.8.1.RC2-0.4-SNAPSHOT.jar"/>
+            <zipfileset src="${sbj}/json-20090211.jar"/>
+        </jar>
         <jar destfile="${d}/scripster-dist.jar" update="true">
-            <zipfileset src="${w}/razbase/lib/json.jar"/>
-            <zipfileset src="${w}/razweb/lib/mime-util.jar"/> 
-            <zipfileset src="${w}/razxml/dist/razxml.jar"/>
-            <zipfileset src="${w}/20widgets-swing/lib/jsyntaxpane-0.9.5-b29.jar"/>
+            <zipfileset src="${w}/razbase/web/lib/mime-util.jar"/> 
+            <zipfileset src="${w}/razbase/20w-swing/lib/jsyntaxpane-0.9.5-b29.jar"/>
         </jar>
 
         <tstamp>
@@ -99,80 +56,18 @@
 
         <jar file="timestamp.txt"
              destfile="${d}/codewitter.jar"/>
-        <jar basedir="${w}/razpub/bin"
-             destfile="${d}/codewitter.jar" update="true" />
         <jar destfile="${d}/codewitter.jar" update="true">
             <zipfileset src="${w}/razpub/lib/log4j-1.2.7.jar"/>
         </jar>
 
 
         <mkdir dir="${d}/lib" />
-        <copy todir="${d}/lib" file="${scala.home}/lib/scala-compiler.jar" />
-        <copy todir="${d}/lib" file="${scala.home}/lib/scala-swing.jar" />
-        <copy todir="${d}/lib" file="../scripster/lib/jline-0_9_5.jar" />
+        <copy tofile="${d}/lib/scala-swing.jar" file="${sbj}/scala-swing-2.8.1.RC2.jar" />
+        <copy tofile="${d}/lib/scala-compiler.jar" file="${w}/scripster/project/boot/scala-2.8.1.RC2/lib/scala-compiler.jar" />
+        <copy tofile="${d}/lib/scala-library.jar" file="${w}/scripster/project/boot/scala-2.8.1.RC2/lib/scala-library.jar" />
+        <copy todir="${d}/lib" file="${sbj}/scalaz-core_2.8.0-5.0.jar" />
+        <copy todir="${d}/lib" file="lib/jline-0_9_5.jar" />
 
-    </target>
-
-    <target name="dist-sbt">
-        <delete  dir="${d}"/>
-        <mkdir  dir="${d}"/>
-        <mkdir  dir="${d}/lib"/>
-
-        <property name="sb" value="target/scala_2.8.1.RC1/classes"/>
-
-        <tstamp>
-           <format property="stamp" pattern="yyyy/MM/dd hh:mm aa" />
-        </tstamp>
-        <echo message="${stamp}" file="timestamp.txt"/>
-
-        <jar file="timestamp.txt"
-             destfile="${d}/scripster-dist.jar"/>
-        <jar  basedir="${w}/razbase/${sb}"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/20widgets/${sb}"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/20widgets-swing/${sb}"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/razweb/${sb}"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar  basedir="${w}/scripster/${sb}"
-             destfile="${d}/scripster-dist.jar" update="true" />
-        <jar destfile="${d}/scripster-dist.jar" update="true">
-            <zipfileset src="${w}/razbase/lib/json.jar"/>
-            <zipfileset src="${w}/razweb/lib/mime-util.jar"/> 
-            <zipfileset src="${w}/razxml/dist/razxml.jar"/>
-            <zipfileset src="${w}/20widgets-swing/lib/jsyntaxpane-0.9.5-b29.jar"/>
-        </jar>
-
-        <tstamp>
-           <format property="stamp" pattern="yyyy/MM/dd hh:mm aa" />
-        </tstamp>
-        <echo message="${stamp}" file="timestamp.txt"/>
-
-        <jar file="timestamp.txt"
-             destfile="${d}/codewitter.jar"/>
-        <jar basedir="${w}/razpub/bin"
-             destfile="${d}/codewitter.jar" update="true" />
-        <jar destfile="${d}/codewitter.jar" update="true">
-            <zipfileset src="${w}/razpub/lib/log4j-1.2.7.jar"/>
-        </jar>
-
-
-        <mkdir dir="${d}/lib" />
-        <copy todir="${d}/lib" file="${scala.home}/lib/scala-compiler.jar" />
-        <copy todir="${d}/lib" file="${scala.home}/lib/scala-swing.jar" />
-        <copy todir="${d}/lib" file="../scripster/lib/jline-0_9_5.jar" />
-
-    </target>
-
-    <target name="clean-dist" depends="clean-all,build-all,dist-ant" />
-    <target name="dist-all">
-        <ant target="jar-only" dir="${w}/razbase/"/>
-        <ant target="jar-only" dir="${w}/20widgets/"/>
-        <ant target="jar-only" dir="${w}/20widgets-swing/"/>
-        <ant target="jar-only" dir="${w}/razweb/"/>
-        <ant target="jar-only" dir="${w}/scripster/"/>
-        <antcall target="dist"/>
     </target>
 
 </project>

@@ -3,16 +3,20 @@
  *   )   / /(__)\  / /_  _)(_  )__)\__ \     )___/ )(__)(  ) _ <
  *  (_)\_)(__)(__)(____)(____)(____)___/    (__)  (______)(____/
  *                      
- *  Copyright (c) Razvan Cojocaru, 2007+, Creative Commons Attribution 3.0
+ *  Copyright (c) Razie Designs Inc, 2007+, Creative Commons Attribution 3.0
  */
 
-This code is provided AS IS. No warranties implied nor any liabilities assumed. 
+This code is provided AS IS! No warranties implied nor any liabilities assumed. 
 Use at your own risk! 
 
-All code and resources in this project are copyrighted by Razvan Cojocaru, 
+All code and resources in this project are copyrighted by Razie Designs Inc, 
 with the exception mentioned below, under the 
 Creative Commons Attribution 3.0 Unported License, 
 available at http://creativecommons.org/licenses/by/3.0/.
+
+If you don't know or you're not sure what the above means, you're not allowed to use, view, see or otherwise be near this! Think harder!
+
+Commercial support is available by contacting us via http://designs.razie.com
 
 -----------
 

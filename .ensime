@@ -2,7 +2,7 @@
 
 (
 
-:server-root "/home/razvanc/bin/ensime_2.8.0-0.2.5/"
+:server-root "/home/razvanc/bin/ensime_2.8.1.RC2-0.3.5/"
 
 :project-package "razie.scripster"
 
