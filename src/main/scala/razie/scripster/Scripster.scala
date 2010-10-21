@@ -125,9 +125,10 @@ object Scripster {
      (razie.Threads.forkjoinWithin[String,(RazScript.RSResult[Any], AnyRef)] (msec) (List(script)) { 
         Scripster.exec (lang, _, sessionId)
         })
-println ("X ========= " + x)
-     if (x != null && x.size > 0 && x.head._1 != null) x.head
-     else ( RazScript.RSError("UNKNOWN - Probably did not finish in time..."), null)
+     x.headOption match {
+       case Some(Some(e)) if (e._1 != null) => e
+       case _ => ( RazScript.RSError("UNKNOWN - Probably did not finish in time..."), null)
+     }
    }
 
    /** this runs in the current thread
@@ -135,6 +136,7 @@ println ("X ========= " + x)
     * @return (complex code with info , just null or value) 
     */
    def texec (lang:String, script:String, sessionId:String) : (RazScript.RSResult[Any], AnyRef) = {
+    def sessmsg = "No session found id="+sessionId + " - You could refresh the page and get a new session, AFTER saving the contents of the script pad..."
       val ret = try {
      Sessions.get (sessionId).map (session=> {
      session accumulate script
@@ -176,7 +178,7 @@ println ("X ========= " + x)
        }
      }
      }
-     ).getOrElse((RazScript.RSError("No session found id="+sessionId), "No session found id="+sessionId))
+     ).getOrElse((RazScript.RSError(sessmsg), sessmsg))
       } catch {
           case e:Exception => {
          razie.Log ("While processing script: " + script, e)
@@ -190,6 +192,7 @@ println ("X ========= " + x)
      razie.Log ("result=" + ret)
      ret
    }
+
    
   def options (sessionId:String, line:String) = {
     Sessions get sessionId match {
