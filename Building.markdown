@@ -12,31 +12,42 @@ Developing & Building
 These projects are setup as eclipse projects and also have ant build and sbt build files. 
 The sbt and eclipse are actively maintained...
 
-Here's how to build it:
 
-1. Setup ant and scala
+Here's how to use it:
+
+1 Setup sbt and scala
+
+2. In the sbt Project file for your project (project/build/Project.scala), add the dependency:
+  val scrip   = "com.razie" %% "scripster"       % "0.4-SNAPSHOT"
+
+
+Using it in an eclipse project is easy as well.
+
+1 Create the sbt setup for your project, as mentioned above
+
+2 Issue the 'sbt update' command - sbt will go and download all required jars
+
+3 In the eclipse project, add all the jar files from the lib_managed folder
+
+
+Here's how to build it, if you feel like forking it:
+
+1. Setup sbt and scala
+SETUP sbt: http://code.google.com/p/simple-build-tool/wiki/Setup
+
 2. Make a workspace directory ${w}
+
 3. checkout the following projects
 
     cd ${w}
-    git clone git@github.com:razie/razbase.git
     git clone git@github.com:razie/scripster.git
 
 Note: if you don't have a github ssh key setup, use the anonymous checkout:
 
-    git clone http://github.com/razie/razbase.git
     git clone http://github.com/razie/scripster.git
 
-3.1. hack a bit - have to checkout my fork of CodeMirror in this specific location
-
-   cd ${w}/razbase/20widgets/src/resources/public
-   git clone git@github.com:razie/CodeMirror.git
-
 4. sbt build
-SETUP sbt: http://code.google.com/p/simple-build-tool/wiki/Setup
 
-    cd ${w}/razbase
-    sbt update publish-local
     cd ${w}/scripster
     sbt update publish-local
 
@@ -50,7 +61,7 @@ SETUP sbt: http://code.google.com/p/simple-build-tool/wiki/Setup
 
 -. If you're having problems with out of memory, you have to build each:
 
-    for ff in "razbase 20widgets 20widgets-swing razweb scripster"
+    for ff in "razbase scripster"
     do
        ant -f $f/build.xml clean build jar-only
     done
