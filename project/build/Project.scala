@@ -7,8 +7,9 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
   val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/snapshots/"
   Credentials(Path.userHome / ".ivy2.credentials", log)
       
-  val SCALAVER = "2.8.1.RC2"
-  val RAZBASEVER = "0.1-SNAPSHOT"
+  val SCALAVER = "2.8.1"
+//  val RAZBASEVER = "0.1-SNAPSHOT"
+  val RAZBASEVER = "0.2"
     
   val scalatest  = "org.scalatest" % "scalatest" % "1.2"
   val scalaSwing = "org.scala-lang" % "scala-swing" % SCALAVER
