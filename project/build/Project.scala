@@ -5,14 +5,15 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
 
   override def managedStyle = ManagedStyle.Maven
   val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/snapshots/"
+  //val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
   Credentials(Path.userHome / ".ivy2.credentials", log)
       
   val SCALAVER = "2.8.1"
-//  val RAZBASEVER = "0.1-SNAPSHOT"
-  val RAZBASEVER = "0.2"
+  val RAZBASEVER = "0.3-SNAPSHOT"
     
   val scalatest  = "org.scalatest" % "scalatest" % "1.2"
   val scalaSwing = "org.scala-lang" % "scala-swing" % SCALAVER
+  val bootcp     = "com.razie" %% "scripster-bootcp" % SCALAVER //% "test->default"
   val scalaComp  = "org.scala-lang" % "scala-compiler" % SCALAVER % "test->default"
   val scalaLib   = "org.scala-lang" % "scala-library" % SCALAVER % "test->default"
   val junit      = "junit" % "junit" % "4.5" % "test->default"

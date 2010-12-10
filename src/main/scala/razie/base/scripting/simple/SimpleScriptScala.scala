@@ -123,7 +123,7 @@ object Foo {
     settings
   }
 
-  val inter = new Interpreter(mksettings(println)) {
+  val inter = new nsc.Interpreter(mksettings(println)) {
     override protected def parentClassLoader = Foo.this.getClass.getClassLoader
     }
 

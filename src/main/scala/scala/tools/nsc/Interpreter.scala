@@ -72,15 +72,13 @@ import Interpreter._
  * @author Moez A. Abdel-Gawad
  * @author Lex Spoon
  */
-class Interpreter(val settings: Settings, out: PrintWriter) {
+class Interpreter(val settings: Settings, out: PrintWriter) extends RAZIEInterpreter {
   repl =>
   
    // BEGIN RAZ hacks
 
    // 1. Request is private. I need: dependencies (usedNames?) newly defined values (boundNames?)
    // the resulting value and the error message(s) if any
-   case class PublicRequest (usedNames : List[String], valueNames:List[String], extractionValue:Option[Any], err:List[String])
-
    // 2. Can't get the last request
    def lastRequest : Option[PublicRequest] =
      prevRequests.lastOption map (l =>

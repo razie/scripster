@@ -12,14 +12,13 @@ import scala.tools.nsc.{ InterpreterResults => IR }
 /** will cache the environment, including the parser instance. 
  * That way things defined in one script are visible to the next */
 class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl(parent) {
-//  val p = ScalaScript mkParser err
-  val soon = razie.Threads.promise {
+  private[this] val soon = razie.Threads.promise {
     val ppp = ScalaScript mkParser err
     ppp.evalExpr[Any]("1+2") // prime the parser
     ppp
-    }
+  }
   lazy val p = soon.get() // blocking call on Future
-  
+
   lazy val c = new nsc.interpreter.Completion(p)
 
   def this(parent: ActionContext, args: Any*) = {
@@ -44,13 +43,12 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
 
 // statics
 object ScalaScript {
-  /** bind the values inside the context to the given interpreter instance */
+  /** 
+   * bind the values inside the context to the given interpreter instance 
+   * 
+   * NOTE that binding errors are ignored - there's just too many...watch your log for errors
+   */
   def bind(ctx: ActionContext, p: nsc.Interpreter) {
-    ibind(ctx, p)
-  }
-
-  /** bind the values inside the context to the given interpreter instance */
-  private[this] def ibind(ctx: ActionContext, p: nsc.Interpreter) {
     p.bind("ctx", ctx.getClass.getCanonicalName, ctx)
     if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].parent != null)
       p.bind("parent", ctx.asInstanceOf[ScriptContextImpl].parent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].parent)
@@ -59,11 +57,21 @@ object ScalaScript {
     while (iter.hasNext) {
       val key = iter.next
       val obj = ctx.getAttr(key);
+      
       if ("ctx" != key && "parent" != key)
         razie.Debug ("binding " + key + ":" + obj.getClass.getName) // obj.toString causes a mess...
+
+      // this here reveals a screwed up handling of $$ class names in scala
       //        razie.Debug ("binding " + key + ":"+obj.getClass.getSimpleName) // obj.toString causes a mess...
       //      p.bind(key, obj.getClass.getCanonicalName, obj)
-      p.bind(key, obj.getClass.getName, obj)
+
+      try {
+        p.bind(key, obj.getClass.getName, obj)
+      } catch {
+        case e: Exception => {
+          razie.Alarm("While binding variable: " + key + ":" + obj.getClass.getName, e)
+        }
+      }
     }
   }
 
@@ -77,8 +85,8 @@ object ScalaScript {
         // see http://gist.github.com/404272
         val settings = new nsc.Settings(errLogger)
         settings embeddedDefaults getClass.getClassLoader
-        //razie.Debug ("Scripster using classpath: " + settings.classpath.value)
-        //razie.Debug ("Scripster using boot classpath: " + settings.bootclasspath.value)
+        razie.Debug ("Scripster using classpath: " + settings.classpath.value)
+        razie.Debug ("Scripster using boot classpath: " + settings.bootclasspath.value)
         settings
       } else {
         razie.Debug ("Scripster using java classpath")
@@ -135,12 +143,12 @@ case class ScalaScript(val script: String) extends RazScript {
       RazScript.RSSucc(result)
     } catch {
       case e: Exception => {
-          razie.Log("While processing script: " + this.script, e)
-          val r = "ERROR: " + e.getMessage + " : " +
-            (sctx.map(_.lastError) getOrElse "Unknown")
-          sctx.map(_.lastError = "")
-          RazScript.RSError(r)
-        }
+        razie.Log("While processing script: " + this.script, e)
+        val r = "ERROR: " + e.getMessage + " : " +
+          (sctx.map(_.lastError) getOrElse "Unknown")
+        sctx.map(_.lastError = "")
+        RazScript.RSError(r)
+      }
     }
   }
 
@@ -168,9 +176,9 @@ case class ScalaScript(val script: String) extends RazScript {
       ret
     } catch {
       case e: Exception => {
-          razie.Log("While processing script: " + this.script, e)
-          throw e
-        }
+        razie.Log("While processing script: " + this.script, e)
+        throw e
+      }
     }
   }
 
@@ -179,7 +187,16 @@ case class ScalaScript(val script: String) extends RazScript {
 
 /** hacking the scala interpreter - this will accumulate errors and retrieve all new defined values */
 class RaziesInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
+  //  type RInt = nsc.Interpreter with nsc.RAZIEInterpreter
+  this: nsc.Interpreter with nsc.RAZIEInterpreter
 
+//  /** hacked reporter - accumulates erorrs... */
+//  class MyPrintWriter extends nsc.NewLinePrintWriter(new ConsoleWriter, true) {
+//    override def println() { print("\n"); flush() }
+//  }
+
+//  case class PublicRequest (usedNames : List[String], valueNames:List[String], extractionValue:Option[Any], err:List[String])
+   
   def eval(s: ScalaScript, ctx: ActionContext): RazScript.RSResult[Any] = {
     beQuietDuring {
       interpret(s.script) match {
@@ -189,13 +206,13 @@ class RaziesInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
           else
             RazScript.RSSuccNoValue
         case IR.Error => {
-            val c =
-              if (lastRequest.get.valueNames.contains("lastException"))
-                RazScript.RSError(evalExpr[Exception]("lastException").getMessage)
-              else RazScript.RSError(lastRequest.get.err mkString "\n\r")
-            errAccumulator.clear
-            c
-          }
+          val c =
+            if (lastRequest.get.valueNames.contains("lastException"))
+              RazScript.RSError(evalExpr[Exception]("lastException").getMessage)
+            else RazScript.RSError(lastRequest.get.err mkString "\n\r")
+          errAccumulator.clear
+          c
+        }
         case IR.Incomplete => RazScript.RSIncomplete
       }
     }

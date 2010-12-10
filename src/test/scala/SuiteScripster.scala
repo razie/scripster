@@ -18,6 +18,8 @@ class SuiteScripster () extends junit.framework.TestSuite(classOf[XNadaScripster
   
   // this is where you list the tests...
    addTestSuite(classOf[razie.scripster.test.ScalaScriptTest])
+   addTestSuite(classOf[razie.scripster.test.SimpleScriptTest])
+   addTestSuite(classOf[razie.scripster.test.ScalaComplexTest])
    
    def test1() = 
      // don't touch this line
