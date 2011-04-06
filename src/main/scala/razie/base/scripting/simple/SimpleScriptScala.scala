@@ -8,6 +8,9 @@ package razie.base.scripting.simple
 import scala.tools.{nsc => nsc}
 import scala.tools.nsc.{ InterpreterResults => IR, Settings }
 
+/* self-contained outline of the scripster, useful when opening tickets etc - otherwise not used... */
+
+
 /**
  * nice result specification for a script runner
  */

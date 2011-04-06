@@ -17,7 +17,7 @@ import razie.base._
 import razie.base.scripting._
 
 /** 
- * a door to the REPL
+ * a door to the scala REPL
  * 
  * Usage: it works with a LightServer (see project razweb). You can 
  * {@link #attachTo} to an existing server or {@link create} a new, dedicated one.
@@ -45,18 +45,19 @@ import razie.base.scripting._
  * @author razvanc99
  */
 object Scripster {
-   // set this to limit the objects to use...
-   var sharedContext = ScriptContextImpl.global
+   // this context is shared by all scripts ran in this Agent/JVM...
+   var ns_sharedContext = new razie.NoStatic("sharedContext", ScriptContextImpl.global)
+   def sharedContext = ns_sharedContext.get
    
    // hook to the web/telnet server
-   private var contents : CS = null
+   private var contents : razie.NoStatic[Option[CS]] = new razie.NoStatic("Scripster.contents", None)
    
    ScriptFactory.init (new ScalaScriptFactory(ScriptFactory.singleton, true))
 
    /** use this to attach the REPL to an existing server */
    def attachTo (ls:LightServer) = {
-      contents = new CS(ls.contents.asInstanceOf[LightContentServer]) // TODO cleanup cast
-      ls.contents = contents
+      contents set Some(new CS(ls.contents.asInstanceOf[LightContentServer])) // TODO cleanup cast
+      ls.contents = contents.get.get
    }
   
    /** create a new server on the specified port and start it on the thread 

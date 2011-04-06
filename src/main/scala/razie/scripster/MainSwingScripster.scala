@@ -5,13 +5,9 @@
  */
 package razie.scripster
 
-//import com.razie.pub.lightsoa._
 import com.razie.pub.comms._
 import com.razie.pub.base._
 import com.razie.pub.base.data._
-//import com.razie.pub.http._
-//import com.razie.pub.http.sample._
-//import com.razie.pub.http.LightContentServer
 import com.razie.pub.base.ExecutionContext
 import razie.base._
 import razie.base.scripting._
@@ -22,6 +18,7 @@ import razie.draw.swing._
 import scala.swing._
 import razie.Draw
 
+/** run a simple scripster server with a swing front-end */
 object MainSwingScripster extends SimpleSwingApplication {
 
   def top = new MainFrame {

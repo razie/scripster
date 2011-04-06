@@ -12,6 +12,7 @@ import scala.tools.nsc.{ InterpreterResults => IR }
 /** will cache the environment, including the parser instance. 
  * That way things defined in one script are visible to the next */
 class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl(parent) {
+  
   private[this] val soon = razie.Threads.promise {
     val ppp = ScalaScript mkParser err
     ppp.evalExpr[Any]("1+2") // prime the parser
@@ -19,7 +20,7 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   }
   lazy val p = soon.get() // blocking call on Future
 
-  lazy val c = new nsc.interpreter.Completion(p)
+  lazy val comp = new nsc.interpreter.Completion(p)
 
   def this(parent: ActionContext, args: Any*) = {
     this(parent)
@@ -31,7 +32,7 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   override def options(scr: String): java.util.List[String] = {
     ScalaScript.bind(this, p)
     val l = new java.util.ArrayList[String]()
-    c.jline.complete(scr, scr.length, l)
+    comp.jline.complete(scr, scr.length, l)
     val itDoesntWorkOtherwise = l.toString
     l
   }
@@ -53,23 +54,20 @@ object ScalaScript {
     if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].parent != null)
       p.bind("parent", ctx.asInstanceOf[ScriptContextImpl].parent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].parent)
 
-    val iter = ctx.getPopulatedAttr().iterator
-    while (iter.hasNext) {
-      val key = iter.next
-      val obj = ctx.getAttr(key);
+    ctx.foreach {(name,value) => 
       
-      if ("ctx" != key && "parent" != key)
-        razie.Debug ("binding " + key + ":" + obj.getClass.getName) // obj.toString causes a mess...
+      if ("ctx" != name && "parent" != name)
+        razie.Debug ("binding " + name + ":" + value.getClass.getName) // obj.toString causes a mess...
 
       // this here reveals a screwed up handling of $$ class names in scala
-      //        razie.Debug ("binding " + key + ":"+obj.getClass.getSimpleName) // obj.toString causes a mess...
-      //      p.bind(key, obj.getClass.getCanonicalName, obj)
+      //        razie.Debug ("binding " + name + ":"+value.getClass.getSimpleName) // obj.toString causes a mess...
+      //      p.bind(name, value.getClass.getCanonicalName, value)
 
       try {
-        p.bind(key, obj.getClass.getName, obj)
+        p.bind(name, value.getClass.getName, value)
       } catch {
         case e: Exception => {
-          razie.Alarm("While binding variable: " + key + ":" + obj.getClass.getName, e)
+          razie.Alarm("While binding variable: " + name + ":" + value.getClass.getName, e)
         }
       }
     }
@@ -116,6 +114,7 @@ case class ScalaScript(val script: String) extends RazScript {
   override def eval(ctx: ActionContext): RazScript.RSResult[Any] = {
     var result: AnyRef = "";
 
+    // specific scala contexts can cache a parser
     val sctx: Option[ScalaScriptContext] =
       if (ctx.isInstanceOf[ScalaScriptContext])
         Some(ctx.asInstanceOf[ScalaScriptContext])
@@ -143,7 +142,7 @@ case class ScalaScript(val script: String) extends RazScript {
       RazScript.RSSucc(result)
     } catch {
       case e: Exception => {
-        razie.Log("While processing script: " + this.script, e)
+        razie.Warn("While processing script: " + this.script, e)
         val r = "ERROR: " + e.getMessage + " : " +
           (sctx.map(_.lastError) getOrElse "Unknown")
         sctx.map(_.lastError = "")
@@ -183,6 +182,8 @@ case class ScalaScript(val script: String) extends RazScript {
   }
 
   def compile(ctx: ActionContext): RazScript.RSResult[Any] = RazScript.RSUnsupported("ScriptScala.compile() TODO ")
+  
+  override def lang = "scala"
 }
 
 /** hacking the scala interpreter - this will accumulate errors and retrieve all new defined values */
