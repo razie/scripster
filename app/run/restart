@@ -1,0 +1,17 @@
+kill `cat ./pid`
+sleep 1
+
+DT=`date | sed 's/ //g'`
+
+mv nohup.out nohup.out.$DT
+
+#SL=/home/razvanc/razmutant/lib
+SL=/home/demo/scripster/app/run/lib
+
+nohup java -Dscripsterpro.target.url=http://cw.razie.com -Dscripsterpro.bitlykey=R_981929c24f36169a79ea917e3990bd01 -Djava.security.manager -Djava.security.policy=./policyfile -Xms250m -Xmx250m -classpath ./cfg:./lib/codewitter.jar:./lib/scripster-dist.jar:./lib/jline-0_9_5.jar:./lib/scalaz-core_2.8.0-5.0.jar:./lib/scala-library.jar:./lib/scala-compiler.jar razie.scripsterpro.MainScripsterPro &
+
+echo $! >./pid
+
+ps -u demo | grep java
+
+
