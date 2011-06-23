@@ -13,7 +13,7 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
     
   val scalatest  = "org.scalatest" % "scalatest" % "1.2"
   val scalaSwing = "org.scala-lang" % "scala-swing" % SCALAVER
-  val bootcp     = "com.razie" %% "scripster-bootcp" % SCALAVER //% "test->default"
+  val bootcp     = "com.razie" % "scripster-bootcp_2.8.1" % "2.8.1" //% "test->default"
   val scalaComp  = "org.scala-lang" % "scala-compiler" % SCALAVER % "test->default"
   val scalaLib   = "org.scala-lang" % "scala-library" % SCALAVER % "test->default"
   val junit      = "junit" % "junit" % "4.5" % "test->default"
