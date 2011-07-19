@@ -2,7 +2,7 @@ package razie.base.scripting.test;
 
 import scala.tools.{nsc => nsc}
 
-object MoreSimplifiedTestApp2 extends Application {
+object MoreSimplifiedTestApp2 extends App {
   val settings = {
      val set = new nsc.Settings()
      set.classpath.value += java.io.File.pathSeparator + System.getProperty ("java.class.path")

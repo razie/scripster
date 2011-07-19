@@ -36,12 +36,14 @@ object CompletionTest {
     val env = new nsc.Settings
     val p = new nsc.Interpreter (env)         
     val l = new java.util.ArrayList[String]()
-    val c = new nsc.interpreter.Completion(p)
+    val c = new nsc.interpreter.JLineCompletion(p)
    
     val scr = "java.lang.Syste"
       
-    c.jline.complete (scr, scr.length-1, l)
-    c.jline.complete (scr, scr.length-1, l)
+    var out = c.completer.complete (scr, scr.length-1)
+    out = c.completer.complete (scr, scr.length-1)
+    import scala.collection.JavaConversions._
+    l.addAll (out.candidates)
 //    println ("options for: \'"+scr+"\' are: " +l)
     l
   }

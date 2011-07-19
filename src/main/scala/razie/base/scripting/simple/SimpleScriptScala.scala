@@ -6,7 +6,7 @@
 package razie.base.scripting.simple
 
 import scala.tools.{nsc => nsc}
-import scala.tools.nsc.{ InterpreterResults => IR, Settings }
+import scala.tools.nsc.{ InterpreterResults => IR, Settings}
 
 /* self-contained outline of the scripster, useful when opening tickets etc - otherwise not used... */
 
@@ -50,14 +50,15 @@ case class ScriptContext (var values:Map[String, Any]) {
    val p = SS mkParser err
    var lastError : String = ""
    
-   lazy val c = new nsc.interpreter.Completion(p)
+   lazy val c = new nsc.interpreter.JLineCompletion(p)
    
    /** content assist options */
    def options (scr:String) : java.util.List[String] = {
       SS.bind (this, p)
       val l = new java.util.ArrayList[String]()
-      c.jline.complete (scr, scr.length, l)
-      val itDoesntWorkOtherwise = l.toString
+      val output = c.completer().complete (scr, scr.length)
+      import scala.collection.JavaConversions._
+      l.addAll (output.candidates)
       l
    }
    
@@ -83,7 +84,7 @@ object SS {
       println (">>>>>>>>>>>>>>" + settings.classpath.value)
       println (">>>>>>>>>>>>>>" + settings.bootclasspath.value)
 
-      val p = new RaziesInterpreter (settings) {
+      val p = new RazieInterpreterImpl (settings) {
         override protected def parentClassLoader = SS.getClass.getClassLoader
         }
       p.setContextClassLoader  
@@ -92,7 +93,7 @@ object SS {
       val env = new nsc.Settings(errLogger)
       env.usejavacp.value = true
   
-      val p = new RaziesInterpreter (env) 
+      val p = new RazieInterpreterImpl (env) 
       p.setContextClassLoader  
       p
     }
@@ -202,57 +203,109 @@ case class AScript (val script:String) {
    
 }
 
-/** hacking the scala interpreter */
-class RaziesInterpreter (s:nsc.Settings) extends nsc.Interpreter (s) {
+/** hacking the scala interpreter - this will accumulate errors and retrieve all new defined values */
+class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) with nsc.RAZIEInterpreter {
+  import memberHandlers._
+//  import nsc.interpreter.MemberHandlers
+//  this: nsc.Interpreter with nsc.RAZIEInterpreter
 
-  /** transform interpreter codes into reacher Raz codes */
-  def eval (s:AScript, ctx:ScriptContext) : RazScript.RSResult[Any] = {
+   // 1. Request is private. I need: dependencies (usedNames?) newly defined values (boundNames?)
+   // the resulting value and the error message(s) if any
+   // 2. Can't get the last request
+   def lastRequest : Option[PublicRequest] =
+     prevRequestList.lastOption map (l =>
+//       PublicRequest (l.usedNames.map(_.decode), l.valueNames.map(_.decode), l.extractionValue, errAccumulator.toList)
+       PublicRequest (
+           l.referencedNames.map(_.decode), 
+           l.handlers.collect { case x: ValHandler => x.name }.map(_.decode), 
+           try l.getEval catch { case _ => None} , //l.extractionValue,  // TODO hides some errors
+           errAccumulator.toList)
+    
+       )
+   
+//  def allImplicits                   = allHandlers filter (_.definesImplicit) flatMap (_.definedNames)
+//  def importHandlers                 = allHandlers collect { case x: ImportHandler => x }
+
+//  /** hacked reporter - accumulates erorrs... */
+//  class MyPrintWriter extends nsc.NewLinePrintWriter(new ConsoleWriter, true) {
+//    override def println() { print("\n"); flush() }
+//  }
+
+  def evalExpr[T](code:String): T = {
+ beQuietDuring {
+    interpret(code) match {
+      case IR.Success =>
+        try lastRequest.flatMap (_.extractionValue).get.asInstanceOf[T]
+        catch { case e: Exception => out println e ; throw e }
+      case _ => throw new IllegalStateException ("parser didn't return success")
+    }
+  }  
+ }
+  
+  def eval(s: AScript, ctx: ScriptContext): RazScript.RSResult[Any] = {
     beQuietDuring {
       interpret(s.script) match {
-        case IR.Success => 
-          if (lastRequest map (_.extractionValue.isDefined) getOrElse false) 
-             RazScript.RSSucc (lastRequest.get.extractionValue get)
+        case IR.Success =>
+          if (lastRequest map (_.extractionValue.isDefined) getOrElse false)
+            RazScript.RSSucc(lastRequest.get.extractionValue get)
           else
-             RazScript.RSSuccNoValue
+            RazScript.RSSuccNoValue
         case IR.Error => {
-           val c = RazScript.RSError (lastRequest.get.err mkString "\n\r")
-           errAccumulator.clear
-           c
+          val c =
+            if (lastRequest.get.valueNames.contains("lastException"))
+              RazScript.RSError(evalExpr[Exception]("lastException").getMessage)
+            else RazScript.RSError(lastRequest.get.err mkString "\n\r")
+          errAccumulator.clear
+          c
         }
         case IR.Incomplete => RazScript.RSIncomplete
-     }
+      }
     }
   }
 
   def lastNames = {
     // TODO nicer way to build a map from a list?
-    val ret = new scala.collection.mutable.HashMap[String,Any]()
+    val ret = new scala.collection.mutable.HashMap[String, Any]()
     // TODO get the value of x nicer
-    lastRequest.get.valueNames.foreach (x => {
-       val xx = (x -> evalExpr[Any] (x))
-       println ("bound: " + xx)
-       ret += (x -> evalExpr[Any] (x))
-    })
+    for (
+      x <- lastRequest.get.valueNames if (x != "lastException" && !x.startsWith ("synthvar$") && x != "ctx")
+    ) {
+      val xx = (x -> evalExpr[Any](x))
+      razie.Debug("bound: " + xx)
+      //      ret += (x -> evalExpr[Any](x))
+      ret += xx
+    }
     ret
   }
 }
 
+object D {
+  def stop {
+    println ("stopped")
+  }
+}
+
 /** scripting examples */
-object SimpleSSSamples extends Application {
+object SimpleSSSamples extends App {
   var failed = 0
+  var passed = 0
+  var skipped = 0
   
   def expect (x:Any) (f: => Any) = { 
      val r = f; 
-     if (x == r) 
-        println (x + "...as expected")
+     if (x == r)  {
+        println ("OK: " + x + "...as expected")
+        passed += 1
+     }
      else {
-        println ("Expected "+x+" : "+x.asInstanceOf[AnyRef].getClass+" but got "+r+" : "+r.asInstanceOf[AnyRef].getClass) 
+        println ("ERROR - Expected "+x+" : "+x.asInstanceOf[AnyRef].getClass+" but got "+r+" : "+r.asInstanceOf[AnyRef].getClass) 
         failed=failed+1
      }
      }
   
   def dontexpect (x:Any) (f: => Any) = { 
      println ("Skipping...")
+     skipped += 1
   }
   
   // simple, one time, expression
@@ -289,6 +342,7 @@ object SimpleSSSamples extends Application {
   // test sharing defs
   expect (9) {
      val ctx = ScriptContext(Map("a" -> 1, "b" -> 2))
+     D.stop
      AScript("""def f(x: Int) = x*x""").print.interactive (ctx)
      AScript("""f (1+2)""").print.interactive (ctx) getOrElse "?"
      }
@@ -304,5 +358,5 @@ object SimpleSSSamples extends Application {
   if (failed > 0)
      println ("====================FAILED "+failed+" tests=============")
   else
-     println ("ok") 
+     println ("ok, passed %s tests, skipped $s tests".format (passed, skipped)) 
 } 

@@ -17,7 +17,7 @@ import razie.base._
 import razie.base.scripting._
 import razie.scripster._
 
-object MainScripsterPro extends Application {
+object MainScripsterPro extends App {
    // warm up the interpreter while you move your hands... :)
    new java.lang.Thread ( 
          new java.lang.Runnable { 

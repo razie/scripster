@@ -20,7 +20,7 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   }
   lazy val p = soon.get() // blocking call on Future
 
-  lazy val comp = new nsc.interpreter.Completion(p)
+  lazy val comp = new nsc.interpreter.JLineCompletion(p)
 
   def this(parent: ActionContext, args: Any*) = {
     this(parent)
@@ -32,14 +32,23 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   override def options(scr: String): java.util.List[String] = {
     ScalaScript.bind(this, p)
     val l = new java.util.ArrayList[String]()
-    comp.jline.complete(scr, scr.length, l)
-    val itDoesntWorkOtherwise = l.toString
+      val output = comp.completer().complete (scr, scr.length)
+      import scala.collection.JavaConversions._
+      l.addAll (output.candidates)
     l
   }
 
   def err(s: String): Unit = { lastError = s }
 
   var expr: Boolean = true // I'm in expression mode versus interpret mode
+}
+
+object ScalaScriptContext {
+  def apply (parms:Map[String,Any]) = {
+    val s = new ScalaScriptContext (null)
+    parms foreach (t => s.set(t._1, t._2))
+    s
+  }
 }
 
 // statics
@@ -94,7 +103,7 @@ object ScalaScript {
       }
     }
 
-    val p = new RaziesInterpreter(env)
+    val p = new RazieInterpreterImpl(env)
     p.setContextClassLoader
     p
   }
@@ -184,55 +193,6 @@ case class ScalaScript(val script: String) extends RazScript {
   def compile(ctx: ActionContext): RazScript.RSResult[Any] = RazScript.RSUnsupported("ScriptScala.compile() TODO ")
   
   override def lang = "scala"
-}
-
-/** hacking the scala interpreter - this will accumulate errors and retrieve all new defined values */
-class RaziesInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
-  //  type RInt = nsc.Interpreter with nsc.RAZIEInterpreter
-  this: nsc.Interpreter with nsc.RAZIEInterpreter
-
-//  /** hacked reporter - accumulates erorrs... */
-//  class MyPrintWriter extends nsc.NewLinePrintWriter(new ConsoleWriter, true) {
-//    override def println() { print("\n"); flush() }
-//  }
-
-//  case class PublicRequest (usedNames : List[String], valueNames:List[String], extractionValue:Option[Any], err:List[String])
-   
-  def eval(s: ScalaScript, ctx: ActionContext): RazScript.RSResult[Any] = {
-    beQuietDuring {
-      interpret(s.script) match {
-        case IR.Success =>
-          if (lastRequest map (_.extractionValue.isDefined) getOrElse false)
-            RazScript.RSSucc(lastRequest.get.extractionValue get)
-          else
-            RazScript.RSSuccNoValue
-        case IR.Error => {
-          val c =
-            if (lastRequest.get.valueNames.contains("lastException"))
-              RazScript.RSError(evalExpr[Exception]("lastException").getMessage)
-            else RazScript.RSError(lastRequest.get.err mkString "\n\r")
-          errAccumulator.clear
-          c
-        }
-        case IR.Incomplete => RazScript.RSIncomplete
-      }
-    }
-  }
-
-  def lastNames = {
-    // TODO nicer way to build a map from a list?
-    val ret = new scala.collection.mutable.HashMap[String, Any]()
-    // TODO get the value of x nicer
-    for (
-      x <- lastRequest.get.valueNames if (x != "lastException" && !x.startsWith ("synthvar$") && x != "ctx")
-    ) {
-      val xx = (x -> evalExpr[Any](x))
-      razie.Debug("bound: " + xx)
-      //      ret += (x -> evalExpr[Any](x))
-      ret += xx
-    }
-    ret
-  }
 }
 
 /** scripting examples in ScriptScalaTest.scala */
