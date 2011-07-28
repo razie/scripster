@@ -5,14 +5,12 @@ import sbt._
 class Project(info: ProjectInfo) extends DefaultProject(info) with posterous.Publish {
 
   override def managedStyle = ManagedStyle.Maven
-  //val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/snapshots/"
-  val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
+  val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/snapshots/"
+  //val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
   Credentials(Path.userHome / ".ivy2.credentials", log)
       
   val SCALAVER = "2.9.0-1"
-  //val RAZBASEVER = "0.3-SNAPSHOT"
-  val RAZBASEVER = "0.3"
-//  val bootcp     = "com.razie" % "scripster-bootcp_2.8.1" % "2.8.1" //% "test->default"
+  val RAZBASEVER = "0.4-SNAPSHOT"
     
   val scalatest = "org.scalatest" % "scalatest_2.9.0" % "1.6.1"
   val scalaSwing = "org.scala-lang" % "scala-swing" % SCALAVER
