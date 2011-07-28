@@ -1,4 +1,5 @@
-/**  ____    __    ____  ____  ____,,___     ____  __  __  ____
+/**
+ * ____    __    ____  ____  ____,,___     ____  __  __  ____
  *  (  _ \  /__\  (_   )(_  _)( ___)/ __)   (  _ \(  )(  )(  _ \           Read
  *   )   / /(__)\  / /_  _)(_  )__) \__ \    )___/ )(__)(  ) _ <     README.txt
  *  (_)\_)(__)(__)(____)(____)(____)(___/   (__)  (______)(____/    LICENSE.txt
@@ -9,18 +10,20 @@ import razie.base.ActionContext
 import scala.tools.{ nsc => nsc }
 import scala.tools.nsc.{ InterpreterResults => IR }
 
-/** will cache the environment, including the parser instance. 
- * That way things defined in one script are visible to the next */
+/**
+ * will cache the environment, including the parser instance.
+ * That way things defined in one script are visible to the next
+ */
 class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl(parent) {
-  
+
   private[this] val soon = razie.Threads.promise {
     val ppp = ScalaScript mkParser err
     ppp.evalExpr[Any]("1+2") // prime the parser
     ppp
   }
-  lazy val p = soon.get() // blocking call on Future
+  lazy val parser = soon.get() // blocking call on Future
 
-  lazy val comp = new nsc.interpreter.JLineCompletion(p)
+  lazy val comp = new nsc.interpreter.JLineCompletion(parser)
 
   def this(parent: ActionContext, args: Any*) = {
     this(parent)
@@ -30,32 +33,42 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
 
   /** content assist options */
   override def options(scr: String): java.util.List[String] = {
-    ScalaScript.bind(this, p)
+    ScalaScript.bind(this, parser)
     val l = new java.util.ArrayList[String]()
-      val output = comp.completer().complete (scr, scr.length)
-      import scala.collection.JavaConversions._
-      l.addAll (output.candidates)
+    val output = comp.completer().complete(scr, scr.length)
+    import scala.collection.JavaConversions._
+    l.addAll(output.candidates)
     l
   }
+
+  var lastError: String = null
 
   def err(s: String): Unit = { lastError = s }
 
   var expr: Boolean = true // I'm in expression mode versus interpret mode
 }
 
+/** utility builders */
 object ScalaScriptContext {
-  def apply (parms:Map[String,Any]) = {
-    val s = new ScalaScriptContext (null)
+  def apply(parms: Map[String, Any]) = {
+    val s = new ScalaScriptContext(null)
+    parms foreach (t => s.set(t._1, t._2))
+    s
+  }
+  def apply(parms: (String, Any)*) = {
+    val s = new ScalaScriptContext(null)
     parms foreach (t => s.set(t._1, t._2))
     s
   }
 }
 
-// statics
+/** some statics */
 object ScalaScript {
-  /** 
-   * bind the values inside the context to the given interpreter instance 
-   * 
+  def apply(s: String) = new ScalaScript(s)
+
+  /**
+   * bind the values inside the context to the given interpreter instance
+   *
    * NOTE that binding errors are ignored - there's just too many...watch your log for errors
    */
   def bind(ctx: ActionContext, p: nsc.Interpreter) {
@@ -63,61 +76,38 @@ object ScalaScript {
     if (ctx.isInstanceOf[ScriptContextImpl] && ctx.asInstanceOf[ScriptContextImpl].parent != null)
       p.bind("parent", ctx.asInstanceOf[ScriptContextImpl].parent.getClass.getCanonicalName, ctx.asInstanceOf[ScriptContextImpl].parent)
 
-    ctx.foreach {(name,value) => 
-      
-      if ("ctx" != name && "parent" != name)
-        razie.Debug ("binding " + name + ":" + value.getClass.getName) // obj.toString causes a mess...
+    ctx.foreach { (name, value) =>
+      if ("ctx" != name && "parent" != name) {
+        razie.Debug("binding " + name + ":" + value.getClass.getName) // obj.toString causes a mess...
 
-      // this here reveals a screwed up handling of $$ class names in scala
-      //        razie.Debug ("binding " + name + ":"+value.getClass.getSimpleName) // obj.toString causes a mess...
-      //      p.bind(name, value.getClass.getCanonicalName, value)
+        // this here reveals a screwed up handling of $$ class names in scala
+        //        razie.Debug ("binding " + name + ":"+value.getClass.getSimpleName) // obj.toString causes a mess...
+        //      p.bind(name, value.getClass.getCanonicalName, value)
 
-      try {
-        p.bind(name, value.getClass.getName, value)
-      } catch {
-        case e: Exception => {
-          razie.Alarm("While binding variable: " + name + ":" + value.getClass.getName, e)
+        try {
+          p.bind(name, value.getClass.getName, value)
+        } catch {
+          case e: Exception => {
+            razie.Alarm("While binding variable: " + name + ":" + value.getClass.getName, e)
+          }
         }
       }
     }
   }
 
   /** make a new parser/interpreter instance using the given error logger */
-  def mkParser(errLogger: String => Unit) = {
-    // when in managed class loaders we can't just use the javacp
-    // TODO make this work for any managed classloader - it's hardcoded for sbt
-    val env = {
-      if (ScalaScript.getClass.getClassLoader.getResource("app.class.path") != null) {
-        razie.Debug ("Scripster using app.class.path and boot.class.path")
-        // see http://gist.github.com/404272
-        val settings = new nsc.Settings(errLogger)
-        settings embeddedDefaults getClass.getClassLoader
-        razie.Debug ("Scripster using classpath: " + settings.classpath.value)
-        razie.Debug ("Scripster using boot classpath: " + settings.bootclasspath.value)
-        settings
-      } else {
-        razie.Debug ("Scripster using java classpath")
-        val env = new nsc.Settings(errLogger)
-        env.usejavacp.value = true
-        env
-      }
-    }
-
-    val p = new RazieInterpreterImpl(env)
-    p.setContextClassLoader
-    p
-  }
+  def mkParser(errLogger: String => Unit) = RazieInterpreter mkParser errLogger
 }
 
 /** an interpreted scala script */
-case class ScalaScript(val script: String) extends RazScript {
+class ScalaScript(val script: String) extends RazScript {
 
   /** @return the statement */
   override def toString() = "scala:\n" + script
 
   /**
    * execute the script with the given context
-   * 
+   *
    * @param c the context for the script
    */
   override def eval(ctx: ActionContext): RazScript.RSResult[Any] = {
@@ -129,7 +119,7 @@ case class ScalaScript(val script: String) extends RazScript {
         Some(ctx.asInstanceOf[ScalaScriptContext])
       else None
 
-    val p = sctx.map(_.p) getOrElse (ScalaScript mkParser println)
+    val p = sctx.map(_.parser) getOrElse (ScalaScript mkParser println)
 
     try {
       ScalaScript.bind(ctx, p)
@@ -162,7 +152,7 @@ case class ScalaScript(val script: String) extends RazScript {
 
   /**
    * execute the script with the given context
-   * 
+   *
    * @param c the context for the script
    */
   def interactive(ctx: ActionContext): RazScript.RSResult[Any] = {
@@ -171,12 +161,12 @@ case class ScalaScript(val script: String) extends RazScript {
         Some(ctx.asInstanceOf[ScalaScriptContext])
       else None
 
-    val p = sctx.map(_.p) getOrElse (ScalaScript mkParser println)
+    val p = sctx.map(_.parser) getOrElse (ScalaScript mkParser println)
 
     try {
       ScalaScript.bind(ctx, p)
 
-      val ret = p.eval(this, ctx)
+      val ret = p.eval(this)
 
       // bind new names back into context
       p.lastNames.foreach(m => ctx.set(m._1, m._2.asInstanceOf[AnyRef]))
@@ -191,7 +181,7 @@ case class ScalaScript(val script: String) extends RazScript {
   }
 
   def compile(ctx: ActionContext): RazScript.RSResult[Any] = RazScript.RSUnsupported("ScriptScala.compile() TODO ")
-  
+
   override def lang = "scala"
 }
 
