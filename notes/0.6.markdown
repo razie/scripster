@@ -1,0 +1,5 @@
+
+Updated to scala 2.9.0-1 and scalaz 6.0
+
+Also simplified the code quite a bit. The 2.9.0 parser is much better to use than before.
+

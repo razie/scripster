@@ -8,9 +8,9 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/razbase"/>
 	<classpathentry kind="lib" path="lib/jline-0_9_5.jar"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
-	<classpathentry kind="lib" path="lib_managed/scala_2.8.1/compile/json-20090211.jar"/>
 	<classpathentry kind="lib" path="lib_managed/scala_2.8.1/compile/razweb_2.8.1-0.3-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib_managed/scala_2.8.1/compile/scalatest-1.2.jar"/>
 	<classpathentry kind="lib" path="project/boot/scala-2.9.0-1/lib/scala-compiler.jar" sourcepath="C:/bin/scala/src/scala-compiler-src.jar"/>
+	<classpathentry kind="lib" path="lib_managed/scala_2.9.0-1/compile/scalatest_2.9.0-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib_managed/scala_2.9.0-1/compile/json-20090211.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
