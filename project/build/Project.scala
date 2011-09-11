@@ -13,7 +13,7 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with posterous.Pub
   Credentials(Path.userHome / ".ivy2.credentials", log)
       
   val SCALAVER = "2.9.1"
-  val RAZBASEVER = "0.4" + (if (version.toString endsWith "-SNAPSHOT") "-SNAPSHOT" else "")
+  val RAZBASEVER = "0.5" + (if (version.toString endsWith "-SNAPSHOT") "-SNAPSHOT" else "")
     
   val scalatest = "org.scalatest" % "scalatest_2.9.1" % "1.6.1"
   val scalaSwing = "org.scala-lang" % "scala-swing" % SCALAVER
