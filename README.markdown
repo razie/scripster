@@ -18,6 +18,17 @@ So anyone can interact with a running application, having access to all or some 
 What is so special about the scrispter? It has full syntax coloring and content assist, for starters! 
 It can be embedded into any application and shares the same port for telnet as well as web access...
 
+How?
+----
+
+In the sbt Project file for your project (project/build/Project.scala), add the dependency: 
+
+    val scrip = "com.razie" % "scripster_2.9.1" % "0.8-SNAPSHOT"
+
+If you want to build it, see Building.markdown
+
+If instead you just want to run it or add it to your runnables as a single Jar file, use the latest distribution jar from the github downloads and use it in the classpath.
+
 
 Roadmap
 -------

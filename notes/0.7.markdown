@@ -1,0 +1,3 @@
+
+Updated to scala 2.9.1 and scalaz 6.0
+

@@ -1,22 +1,23 @@
 package razie.scripster.test
 
-import org.scalatest.junit._
+import org.junit.Test
 import razie.base.scripting._
 import razie.scripster._
+import org.scalatest.matchers.MustMatchers
 
-class ScalaScriptTest extends JUnit3Suite {
+class ScalaScriptTest extends MustMatchers {
 
-  def testsimple1 = expect (3) {
+  @Test def testsimple1 = expect (3) {
     // simple, one time, expression
     ScalaScript ("1+2").eval (ScriptContextImpl.global) getOrElse "?"
   }
 
-  def testbind = expect ("12") {
+  @Test def testbind = expect ("12") {
     // test binding variables
     ScalaScript ("a+b").eval (new ScalaScriptContext(null, "a", "1", "b", "2")) getOrElse "?"
   }
 
-  def testshare = expect ("12") {
+  @Test def testshare = expect ("12") {
     // test sharing variables - this is possible because populated variables end up in the context and we 
     // share the context
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
@@ -25,19 +26,19 @@ class ScalaScriptTest extends JUnit3Suite {
   }
 
   // export new variables back into context
-  def testexport = expect ("12") {
+  @Test def testexport = expect ("12") {
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
     ScalaScript ("val c = a+b").interactive (ctx)
     ctx sa "c"
   }
 
   // options
-  def testoptions = expect (true) {
+  @Test def testoptions = expect (true) {
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
     ctx.options ("java.lang.Sys") contains ("System")
   }
 
-  def testdef = expect (5) {
+  @Test def testdef = expect (5) {
     // simple, one time, expression
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
     ScalaScript ("""
@@ -52,7 +53,7 @@ def add (i:Int*) = {
     ScalaScript ("add (1+2, 8/4)").interactive (ctx) getOrElse "?"
   }
 
-  def testdefclass = expect (5) {
+  @Test def testdefclass = expect (5) {
     // simple, one time, expression
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
     ScalaScript ("""
@@ -72,7 +73,7 @@ def add (i:Int*) = {
     ScalaScript ("add (1+2, 8/4)").interactive (ctx) getOrElse "?"
   }
 
-  def testdefclass2 = expect (5) {
+  @Test def testdefclass2 = expect (5) {
     // simple, one time, expression
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
     ScalaScript ("""class A""") interactive ctx
@@ -90,13 +91,13 @@ def add (i:Int*) = {
     ScalaScript ("add (1+2, 8/4)").interactive (ctx) getOrElse "?"
   }
 
-  def testScripster = expect (3) {
+  @Test def testScripster = expect (3) {
     import razie.scripster._
     val c = Sessions.create (Scripster.sharedContext, "scala")
     Scripster.execWithin (10000) ("scala", "1+2", c.id)._2
   }
 
-  def testTimeout = expect (true) {
+  @Test def testTimeout = expect (true) {
     import razie.scripster._
     val c = Sessions.create (Scripster.sharedContext, "scala")
     razie.Timer {

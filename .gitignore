@@ -6,4 +6,5 @@ project/boot
 project/build/target
 lib_managed
 target
+project/plugins/src_managed/
 

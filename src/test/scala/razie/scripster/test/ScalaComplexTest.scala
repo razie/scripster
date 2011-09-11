@@ -1,10 +1,11 @@
 package razie.scripster.test
 
-import org.scalatest.junit._
+import org.junit.Test
 import razie.base.scripting._
 import razie.scripster._
+import org.scalatest.matchers.MustMatchers
 
-class ScalaComplexTest extends JUnit3Suite {
+class ScalaComplexTest extends MustMatchers {
   val SS = """
 //select the following defs and issue "run selection"
 class Num (val i:Int) {
@@ -19,7 +20,7 @@ object Num { // this lets you do Num(3) instead of new Num(3)
 implicit def toNum (i:Int) = Num (i) // this makes the conversion implicit
 """
 
-  def testdef1 = expect (3) {
+  @Test def testdef1 = expect (3) {
     // simple, one time, expression
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
     ScalaScript (SS).interactive (ctx)
@@ -27,7 +28,7 @@ implicit def toNum (i:Int) = Num (i) // this makes the conversion implicit
     ScalaScript ("1+2").interactive (ctx) getOrElse "?"
   }
 
-  def testTimeout = expect (RazScript.RSSucc(3)) {
+  @Test def testTimeout = expect (RazScript.RSSucc(3)) {
     import razie.scripster._
     val c = Sessions.create (Scripster.sharedContext, "scala")
     Scripster.execWithin (50000) ("scala", SS, c.id)

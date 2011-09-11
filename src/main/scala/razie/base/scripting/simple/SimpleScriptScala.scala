@@ -108,39 +108,6 @@ class Holder { var value: Any = _ }
 
 import scala.tools.nsc.{ GenericRunnerSettings, Interpreter, Settings }
 
-object Foo {
-  def rev(s: String) = s.split(":").reverse.mkString(":")
-
-  def mksettings(f: String => Unit) = {
-    val settings = new Settings(f)
-    val loader = getClass.getClassLoader
-    settings.classpath.value =
-      "/home/razvanc/wsideaj/scripster/target/scala_2.8.0/classes" +
-        classpath("app", loader).getOrElse(error("Error: could not find application classpath"))
-    settings.bootclasspath.value =
-      "/home/razvanc/wsideaj/scripster/target/scala_2.8.0/classes" +
-        settings.bootclasspath.value + / +
-        classpath("boot", loader).getOrElse(error("Error: could not find boot classpath"))
-    println(">>>>>>>>>>>>>>" + settings.classpath.value)
-    println(">>>>>>>>>>>>>>" + settings.bootclasspath.value)
-    settings
-  }
-
-  val inter = new nsc.Interpreter(mksettings(println)) {
-    override protected def parentClassLoader = Foo.this.getClass.getClassLoader
-  }
-
-  /*  def eval(code: String): Any = {
-    val h = new Holder
-    inter.bind("$r_", h.getClass.getName, h)
-    val r = inter.interpret("$r_.value = " + code)
-    h.value
-  }
- */
-  private def classpath(name: String, loader: ClassLoader) =
-    Option(loader.getResource(name + ".class.path")).map { cp => Source.fromURL(cp).mkString }
-}
-
 /** an interpreted scala script */
 case class AScript(val script: String) {
 
@@ -207,7 +174,8 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
   import memberHandlers._
   import scala.tools.nsc.reporters.ConsoleReporter
   import scala.tools.nsc.interpreter.IMain
-  //  import nsc.interpreter.MemberHandlers
+  import scala.tools.nsc.interpreter.ReplReporter
+//  import nsc.interpreter.MemberHandlers
 
   // What Razie needs in Request
   case class PublicRequest(usedNames: List[String], valueNames: List[String], extractionValue: Option[Any], err: List[String])
@@ -217,7 +185,7 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
   var errAccumulator = new scala.collection.mutable.ListBuffer[String]()
 
   /** hacked reporter - accumulates erorrs... */
-  override lazy val reporter: ConsoleReporter = new IMain.ReplReporter(this) {
+  override lazy val reporter: ConsoleReporter = new ReplReporter(this) {
     override def printMessage(msg: String) {
       errAccumulator append msg
       out println msg
@@ -235,7 +203,8 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
       PublicRequest(
         l.referencedNames.map(_.decode),
         l.handlers.collect { case x: ValHandler => x.name }.map(_.decode),
-        try l.getEval catch { case _ => None }, //l.extractionValue,  // TODO hides some errors
+        try l.lineRep.callOpt("$result") catch { case _ => None }, //l.extractionValue,  // TODO hides some errors
+//worked in 2.9.0-1        try l.getEval catch { case _ => None }, //l.extractionValue,  // TODO hides some errors
         errAccumulator.toList))
 
   //  def allImplicits                   = allHandlers filter (_.definesImplicit) flatMap (_.definedNames)
@@ -250,6 +219,8 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
     beQuietDuring {
       interpret(code) match {
         case IR.Success =>
+          val x = lastRequest.get
+          val b = x.extractionValue
           try lastRequest.flatMap(_.extractionValue).get.asInstanceOf[T]
           catch { case e: Exception => out println e; throw e }
         case _ => throw new IllegalStateException("parser didn't return success")

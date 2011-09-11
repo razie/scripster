@@ -3,9 +3,10 @@
 See the <a href="http://wiki.homecloud.ca/scripster">guide</a>, 
 <a href="http://razie-scripster.962791.n3.nabble.com/">forum</a> or brush up on your 
 <a href="http://www.scala-lang.org/node/1305">scala</a>.
-<p>The current version is built on scala 2.8.1 and includes 
-<a href="http://code.google.com/p/scalaz/">scalaz 5.0</a> and a 
-<a href="http://github.com/razie/gremlins">scala workflow DSL</a>. 
+<p>The current version is built on scala 2.9.1 and includes 
+<a href="https://github.com/scalaz/scalaz">scalaz 6.0.1</a>, a 
+<a href="http://github.com/razie/gremlins">scala workflow DSL</a> and the 
+<a href="http://github.com/razie/snakked">snakking framework</a>. 
 If you'd like to see more libraries included, please post on the forum.
 <ul>
 <li>refresh page to get a new "session"
@@ -14,8 +15,11 @@ If you'd like to see more libraries included, please post on the forum.
 <li>CTRL+SPACE for content assist
 </ul>
 
+<p>Please note that this is a server that runs somewhere, i.e. <code>println ("Hello")</code> will print in the server log files. If you want to see <code>3</code> just type <code>1+2</code>... not <code>println(1+2)</code>
+
 <p>Known issues:
 <ul>
+<li>due to some Javascript/DOM incompatibilities that I don't understand, content assist doesn't work in I.E.
 <li>if you encounter any issues, please refresh the browser (F5) - that will create a new session. You will loose the contents of the pad, so it would be a good idea to copy them beforehand.
 <li>sessions expire in about 2-3 minutes and there's max 10...memory ain't cheap
 <li>there should be no interaction between sessions...but, this is not fully tested yet.
@@ -26,7 +30,7 @@ If you'd like to see more libraries included, please post on the forum.
 <ul>
 <li><a href="http://codemirror.net">CodeMirror</a> - an editable iframe-based code editor in JavaScript
 <li>the scala parser
-<li><a href="http://jline.sourceforge.net/">JLine</a> - a Java library for handling console input
+<li><a href="http://jline.sourceforge.net/">JLine</a> - a Java library for handling console input, we're using the one bundled with scala
 </ul>
 
 

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="scripster">
+<project basedir="." default="dist" name="scripster">
     <property file="../razbase/razie.properties"/>
     <property name="w" value="${workspace.dir}"/>
     <property name="d" value="./dist"/>
+    <property name="sver" value="2.9.0-1"/>
     <import   file="${w}/razbase/base-build.xml"/>
 
     <path id="rundist.path">
@@ -25,8 +26,8 @@
         <mkdir  dir="${d}"/>
         <mkdir  dir="${d}/lib"/>
 
-        <property name="sb" value="target/scala_2.8.1/classes"/>
-        <property name="libm" value="${w}/scripster/lib_managed/scala_2.8.1/compile"/>
+        <property name="sb" value="target/scala_${sver}/classes"/>
+        <property name="libm" value="${w}/scripster/lib_managed/scala_${sver}/compile"/>
 
         <tstamp>
            <format property="stamp" pattern="yyyy/MM/dd hh:mm aa" />
@@ -36,13 +37,14 @@
         <jar file="timestamp.txt"
              destfile="${d}/scripster-dist.jar"/>
         <jar destfile="${d}/scripster-dist.jar" update="true">
-            <zipfileset src="${libm}/20widgets_2.8.1-0.3-SNAPSHOT.jar"/>
-            <zipfileset src="${libm}/20widgets-swing_2.8.1-0.3-SNAPSHOT.jar"/>
-            <zipfileset src="${libm}/base_2.8.1-0.3-SNAPSHOT.jar"/>
-            <zipfileset src="${libm}/razweb_2.8.1-0.3-SNAPSHOT.jar"/>
-            <zipfileset src="${libm}/razweb_2.8.1-0.3-SNAPSHOT.jar"/>
-            <zipfileset src="${w}/scripster/target/scala_2.8.1/scripster_2.8.1-0.6-SNAPSHOT.jar"/>
-            <zipfileset src="${w}/gremlins/target/scala_2.8.1/gremlins_2.8.1-0.3-SNAPSHOT.jar"/>
+            <zipfileset src="${libm}/20widgets_2.9.0-1-0.4-SNAPSHOT.jar"/>
+            <zipfileset src="${libm}/20widgets-swing_2.9.0-1-0.4-SNAPSHOT.jar"/>
+            <zipfileset src="${libm}/base_2.9.0-1-0.4-SNAPSHOT.jar"/>
+            <zipfileset src="${libm}/razweb_2.9.0-1-0.4-SNAPSHOT.jar"/>
+            <zipfileset src="${libm}/razweb_2.9.0-1-0.4-SNAPSHOT.jar"/>
+            <zipfileset src="${w}/scripster/target/scala_2.9.0-1/scripster_2.9.0-1-0.7-SNAPSHOT.jar"/>
+            <zipfileset src="${w}/gremlins/target/scala_2.9.0-1/gremlins_2.9.0-1-0.4-SNAPSHOT.jar"/>
+            <zipfileset src="${w}/snakked/core/target/scala_2.9.0-1/snakk-core_2.9.0-1-0.2-SNAPSHOT.jar"/>
             <zipfileset src="${libm}/json-20090211.jar"/>
         </jar>
         <jar destfile="${d}/scripster-dist.jar" update="true">
@@ -62,11 +64,10 @@
         </jar>
 
         <mkdir dir="${d}/lib" />
-        <copy tofile="${d}/lib/scala-swing.jar" file="${libm}/scala-swing-2.8.1.jar" />
-        <copy tofile="${d}/lib/scala-compiler.jar" file="${w}/scripster/project/boot/scala-2.8.1/lib/scala-compiler.jar" />
-        <copy tofile="${d}/lib/scala-library.jar" file="${w}/scripster/project/boot/scala-2.8.1/lib/scala-library.jar" />
-        <copy todir="${d}/lib" file="${libm}/scalaz-core_2.8.0-5.0.jar" />
-        <copy todir="${d}/lib" file="lib/jline-0_9_5.jar" />
+        <copy tofile="${d}/lib/scala-swing.jar" file="${libm}/scala-swing-2.9.0-1.jar" />
+        <copy tofile="${d}/lib/scala-compiler.jar" file="${w}/scripster/project/boot/scala-2.9.0-1/lib/scala-compiler.jar" />
+        <copy tofile="${d}/lib/scala-library.jar" file="${w}/scripster/project/boot/scala-2.9.0-1/lib/scala-library.jar" />
+        <copy todir="${d}/lib" file="${libm}/scalaz-core_2.9.0-1-6.0.1.jar" />
 
     </target>
 

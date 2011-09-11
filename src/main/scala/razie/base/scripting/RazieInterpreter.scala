@@ -10,6 +10,7 @@ import scala.tools.{ nsc => nsc }
 import scala.tools.nsc.{ InterpreterResults => IR }
 import scala.tools.nsc.reporters.ConsoleReporter
 import scala.tools.nsc.interpreter.IMain
+import scala.tools.nsc.interpreter.ReplReporter
 
 /** hacking the scala interpreter - this will accumulate errors and retrieve all new defined values */
 class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
@@ -23,14 +24,15 @@ class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
       PublicRequest(
         l.referencedNames.map(_.decode),
         l.handlers.collect { case x: ValHandler => x.name }.map(_.decode),
-        try l.getEval catch { case _ => None }, // TODO hides some errors
+        try l.lineRep.callOpt("$result") catch { case _ => None }, //l.extractionValue,  // TODO hides some errors
+//worked in 2.9.0-1        try l.getEval catch { case _ => None }, // TODO hides some errors
         errAccumulator.toList))
 
   // TODO this needs cleared after every run...ugly - no time to fix. should group lastErr under lastRequ
   private var errAccumulator = new scala.collection.mutable.ListBuffer[String]()
 
   /** hacked reporter - accumulates erorrs... */
-  lazy override val reporter: ConsoleReporter = new IMain.ReplReporter(this) {
+  lazy override val reporter: ConsoleReporter = new ReplReporter(this) {
     override def printMessage(msg: String) {
       errAccumulator append msg
       out println msg
