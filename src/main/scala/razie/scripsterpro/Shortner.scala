@@ -76,12 +76,12 @@ class Bitly extends Shortner {
      } catch { 
         case e:Throwable => 
           razie.Log ("ERROR_BITLY: ", e)
-          error ("ERROR_BITLY: "+ec)
+          sys.error ("ERROR_BITLY: "+ec)
      }
      } catch { 
         case e:Throwable => 
           razie.Log ("ERROR_BITLY: ", e)
-          error ("ERROR_BITLY: no connection/reply")
+          sys.error ("ERROR_BITLY: no connection/reply")
      }
   }
    

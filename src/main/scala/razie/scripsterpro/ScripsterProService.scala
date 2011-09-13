@@ -32,7 +32,7 @@ object Allow {
 object ApiKey {
   def validate (ak:String) {
      if (ak != "TEST")
-        error ("Opa! you need to register at http://cw.razie.com/cw/register")
+        sys.error ("Opa! you need to register at http://cw.razie.com/cw/register")
   }
 
   def genForMe () : String = "TEST"
@@ -110,7 +110,7 @@ object Pro {
        case "embed" => new ServiceActionToInvoke (target, Pro.BASESVCNAME, razie.AI("embed"), a)
        case "view" => new ServiceActionToInvoke (target, Pro.BASESVCNAME, razie.AI("view"), a)
        case "interactive" => new ServiceActionToInvoke (target, "scripsterpro", razie.AI("prosession"), a)
-       case _ => error ("unkown kind of quote")
+       case _ => sys.error ("unkown kind of quote")
     }
 
     // this one has to be absolute... there are some tricks when setting up the mutnat, so i'll use the pre-configured server
@@ -158,7 +158,7 @@ object Pro {
           		"<img src=\"http://farm4.static.flickr.com/3526/3272256673_9693ef1ee1_o.png\" alt=\"Tweet This!\" />" +
           		"</a>"
              )
-       case _ => error ("unkown kind of quote")
+       case _ => sys.error ("unkown kind of quote")
     }
           )
     }

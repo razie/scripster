@@ -97,6 +97,9 @@ object ScalaScript {
 
   /** make a new parser/interpreter instance using the given error logger */
   def mkParser(errLogger: String => Unit) = RazieInterpreter mkParser errLogger
+  
+  /** convenience - make a new context here */
+  def mkContext = new ScalaScriptContext()
 }
 
 /** an interpreted scala script */

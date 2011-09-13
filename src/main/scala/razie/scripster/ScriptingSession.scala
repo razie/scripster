@@ -39,7 +39,7 @@ object Sessions {
     if (map.size >= max) {
       val now = System.currentTimeMillis
       Audit.recSessionFail (lang)
-      error ("too many sessions - come back...later, sessions=" +
+      sys.error ("too many sessions - come back...later, sessions=" +
         map.size +
         "  - patience, one expires in: " + (life - (now - (map.values.map(_.time).foldRight(now)(
           (x, y) => if (x < y) x else y)))) / (1000L) + "sec")

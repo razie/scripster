@@ -22,7 +22,7 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with posterous.Pub
   val junit      = "junit" % "junit" % "4.5" % "test->default"
   val json       = "org.json" % "json" % "20090211"
 
-  val scalazCore = "org.scalaz" % "scalaz-core_2.9.0-1" % "6.0.1"
+  val scalazCore = "org.scalaz" % "scalaz-core_2.9.1" % "6.0.3"
 
   val razBase = "com.razie" %% "razbase"         % RAZBASEVER
 }
