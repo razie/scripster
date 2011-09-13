@@ -68,12 +68,30 @@ class ScalaDemoTest extends MustMatchers {
     Demo.add (1+2, 8/4)
   }
 
-  @Test def interpretedShouldEqual3 = expect (true) {
+//  @Test def interpretedShouldEqual3 = expect (true) {
+//    // simple, one time, expression
+//    val ctx = ScalaScript.mkContext
+//    ScalaScript (Demo.demo).interactive (ctx) 
+//    ScalaScript ("val x = add (1+2, 8/4)").eval (ctx)
+//    ScalaScript ("x == Num(5)").eval (ctx) getOrElse false
+//  }
+
+val KK="""
+import razie._
+case class C4 { val c="c" }
+case class C3 { val c=C4() }
+case class C2 { val c=C3() }
+case class C1 { val c=C2() }
+val root=C1()
+def xpl(path: String) = XP[Any](path) using BeanXpSolver xpl root
+xpl ("/root/**/C4/c").size
+"""
+  
+  @Test def wellItFails = expect (1) {
     // simple, one time, expression
     val ctx = ScalaScript.mkContext
-    ScalaScript (Demo.demo).interactive (ctx) 
-    ScalaScript ("val x = add (1+2, 8/4)").eval (ctx)
-    ScalaScript ("x == Num(5)").eval (ctx) getOrElse false
+    ScalaScript (KK).eval (ctx) getOrElse 0
   }
 
+  
 }
