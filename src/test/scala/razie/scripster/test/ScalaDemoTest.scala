@@ -68,13 +68,13 @@ class ScalaDemoTest extends MustMatchers {
     Demo.add (1+2, 8/4)
   }
 
-//  @Test def interpretedShouldEqual3 = expect (true) {
-//    // simple, one time, expression
-//    val ctx = ScalaScript.mkContext
-//    ScalaScript (Demo.demo).interactive (ctx) 
-//    ScalaScript ("val x = add (1+2, 8/4)").eval (ctx)
-//    ScalaScript ("x == Num(5)").eval (ctx) getOrElse false
-//  }
+  @Test def interpretedShouldEqual3 = expect (true) {
+    // simple, one time, expression
+    val ctx = ScalaScript.mkContext
+    ScalaScript (Demo.demo).interactive (ctx) 
+    ScalaScript ("val x = add (1+2, 8/4)").eval (ctx)
+    ScalaScript ("x == Num(5)").eval (ctx) getOrElse false
+  }
 
 val KK="""
 import razie._

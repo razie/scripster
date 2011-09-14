@@ -19,7 +19,6 @@ import razie.scripster.ScripsterService._
 import razie.Draw
 import org.json.JSONObject
 import razie.XP
-import razie.xp.XpJsonSolver
 import razie.AI
 import razie.scripster._
 import razie.draw.widgets.NavLink
