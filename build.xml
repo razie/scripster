@@ -67,6 +67,9 @@
         <copy tofile="${d}/lib/scala-compiler.jar" file="${w}/scripster/project/boot/scala-2.9.1/lib/scala-compiler.jar" />
         <copy tofile="${d}/lib/scala-library.jar" file="${w}/scripster/project/boot/scala-2.9.1/lib/scala-library.jar" />
         <copy todir="${d}/lib" file="${libm}/scalaz-core_2.9.1-6.0.3.jar" />
+        <copy todir="${d}/lib" file="${libm}/slf4j-api-1.6.1.jar" />
+        <copy todir="${d}/lib" file="${libm}/logback-core-0.9.28.jar" />
+        <copy todir="${d}/lib" file="${libm}/logback-classic-0.9.28.jar" />
 
     </target>
 

@@ -44,7 +44,7 @@ import razie.base.scripting._
  * 
  * @author razvanc99
  */
-object Scripster {
+object Scripster extends razie.Logging {
    // this context is shared by all scripts ran in this Agent/JVM...
    var ns_sharedContext = new razie.NoStatic("sharedContext", ScriptContextImpl.global)
    def sharedContext = ns_sharedContext.get
@@ -182,7 +182,7 @@ object Scripster {
      ).getOrElse((RazScript.RSError(sessmsg), sessmsg))
       } catch {
           case e:Exception => {
-         razie.Log ("While processing script: " + script, e)
+         log ("While processing script: " + script, e)
             val r = "ERROR: " + e.getMessage 
             (RazScript.RSError(r), null)
           }

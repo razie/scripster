@@ -16,11 +16,12 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with posterous.Pub
   val SNAKKVER = "0.3" + (if (version.toString endsWith "-SNAPSHOT") "-SNAPSHOT" else "")
     
   val scalatest = "org.scalatest" % "scalatest_2.9.1" % "1.6.1"
+  val junit     = "junit"         % "junit"           % "4.5"       % "test->default"
+  val json      = "org.json"      % "json"            % "20090211"
+
   val scalaSwing = "org.scala-lang" % "scala-swing" % SCALAVER
   val scalaComp  = "org.scala-lang" % "scala-compiler" % SCALAVER % "test->default"
   val scalaLib   = "org.scala-lang" % "scala-library" % SCALAVER % "test->default"
-  val junit      = "junit" % "junit" % "4.5" % "test->default"
-  val json       = "org.json" % "json" % "20090211"
 
   val scalazCore = "org.scalaz" % "scalaz-core_2.9.1" % "6.0.3"
 

@@ -103,7 +103,7 @@ object ScalaScript {
 }
 
 /** an interpreted scala script */
-class ScalaScript(val script: String) extends RazScript {
+class ScalaScript(val script: String) extends RazScript with razie.Logging {
 
   /** @return the statement */
   override def toString() = "scala:\n" + script
@@ -177,7 +177,7 @@ class ScalaScript(val script: String) extends RazScript {
       ret
     } catch {
       case e: Exception => {
-        razie.Log("While processing script: " + this.script, e)
+        log("While processing script: " + this.script, e)
         throw e
       }
     }

@@ -109,7 +109,7 @@ class Holder { var value: Any = _ }
 import scala.tools.nsc.{ GenericRunnerSettings, Interpreter, Settings }
 
 /** an interpreted scala script */
-case class AScript(val script: String) {
+case class AScript(val script: String) extends razie.Logging {
 
   def print = { println("scala:\n" + script); this }
 
@@ -136,7 +136,7 @@ case class AScript(val script: String) {
       RazScript.RSSucc(result)
     } catch {
       case e: Exception => {
-        razie.Log("While processing script: " + this.script, e)
+        log("While processing script: " + this.script, e)
         val r = "ERROR: " + e.getMessage + " : " +
           (ctx.lastError)
         ctx.lastError
@@ -161,7 +161,7 @@ case class AScript(val script: String) {
       ret
     } catch {
       case e: Exception => {
-        razie.Log("While processing script: " + this.script, e)
+        log("While processing script: " + this.script, e)
         throw e
       }
     }

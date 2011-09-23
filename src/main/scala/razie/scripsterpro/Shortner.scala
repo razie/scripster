@@ -42,7 +42,7 @@ class Dummy extends Shortner {
   override def shorten(in: String): String = in
 }
 
-class Bitly extends Shortner {
+class Bitly extends Shortner with razie.Logging {
   override def shorten(in: String): String = {
     try {
       val enc = Comms.encode(in)
@@ -53,7 +53,7 @@ class Bitly extends Shortner {
       val bitret = Comms.readUrl(bitly)
       val j = razie.Snakk.json(bitret)
 
-      razie.Debug("bit.ly reply to " + bitly + " \n was \n" + bitret)
+      debug("bit.ly reply to " + bitly + " \n was \n" + bitret)
 
       val ec = j \@@ "errorCode"
       try {
@@ -65,12 +65,12 @@ class Bitly extends Shortner {
         ret
       } catch {
         case e: Throwable =>
-          razie.Log("ERROR_BITLY: ", e)
+          log("ERROR_BITLY: ", e)
           sys.error("ERROR_BITLY: " + ec)
       }
     } catch {
       case e: Throwable =>
-        razie.Log("ERROR_BITLY: ", e)
+        log("ERROR_BITLY: ", e)
         sys.error("ERROR_BITLY: no connection/reply")
     }
   }
