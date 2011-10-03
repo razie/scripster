@@ -35,7 +35,8 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   override def options(scr: String): java.util.List[String] = {
     ScalaScript.bind(this, parser)
     val l = new java.util.ArrayList[String]()
-    val output = comp.completer().complete(scr, scr.length)
+    val newscr = scr.trim
+    val output = comp.completer().complete(newscr, newscr.length-1)
     import scala.collection.JavaConversions._
     l.addAll(output.candidates)
     l
