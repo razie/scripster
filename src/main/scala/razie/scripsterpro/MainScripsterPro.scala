@@ -18,25 +18,20 @@ import razie.base.scripting._
 import razie.scripster._
 
 object MainScripsterPro extends App {
-   // warm up the interpreter while you move your hands... :)
-   new java.lang.Thread ( 
-         new java.lang.Runnable { 
-            def run() { 
-               new ScalaScript ("1+2").eval(ScriptContextImpl.global) 
-               }}
-         ).start()
-         
-         
-   Scripster.createServer(4445, services = 
-      new HttpSoaBinding(CodeWitterService) :: 
-      new HttpSoaBinding(QuoteWitterService) :: 
-      new HttpSoaBinding(ShareScriptService) :: Nil :::
+  // warm up the interpreter while you move your hands... :)
+  new java.lang.Thread(
+    new java.lang.Runnable {
+      def run() {
+        new ScalaScript("1+2").eval(ScriptContextImpl.global)
+      }
+    }).start()
+
+  Scripster.createServer(4445, services =
+    new HttpSoaBinding(CodeWitterService) :: Nil :::
       (
-      if (System.getProperty("scripsterpro.run", "true").equals("true"))
-        new HttpSoaBinding(ScripsterProService) :: Nil 
-        else Nil
-      )
-      )
+        if (System.getProperty("scripsterpro.run", "true").equals("true"))
+          new HttpSoaBinding(ScripsterProService) :: Nil
+        else Nil))
 
 }
 

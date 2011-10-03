@@ -11,18 +11,21 @@ import com.razie.pub.base.data._
 import com.razie.pub.base.ExecutionContext
 import razie.base._
 import razie.base.scripting._
+import com.razie.pub.lightsoa.HttpSoaBinding
+import razie.scripsterpro.ScripsterProService
 
-/** run a simple scripseter server with no front-end */
+/** run a simple scripster server with no front-end */
 object MainScripster {
-   def main (argv:Array[String]) {
-     Scripster.createServer(4445)
-   
-     // warm up the interpreter while you move your hands... :)
-     new java.lang.Thread ( 
-           new java.lang.Runnable { 
-              def run() { 
-                 new ScalaScript ("1+2").eval(ScriptContextImpl.global) 
-                 }}
-           ).start
-     }
+  def main(argv: Array[String]) {
+    Scripster.createServer(4445, services =
+      new HttpSoaBinding(ScripsterProService) :: Nil)
+
+    // warm up the interpreter while you move your hands... :)
+    new java.lang.Thread(
+      new java.lang.Runnable {
+        def run() {
+          new ScalaScript("1+2").eval(ScriptContextImpl.global)
+        }
+      }).start
+  }
 }

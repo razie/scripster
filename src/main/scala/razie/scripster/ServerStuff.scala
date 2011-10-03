@@ -24,14 +24,14 @@ class CS (proxy:LightContentServer) extends LightContentServer {
    else  
       proxy.dflt = new SH()
    
-   override def options (s:String, sessionId:String) : Seq[ActionItem] = {
+   override def options (s:String, sessionId:String) : Seq[ActionItem] = 
       Scripster.options(sessionId, s)
-   }
    
    override def exec(cmdLine:String, protocol:String, parms:java.util.Properties, socket:MyServerSocket, httpattrs:AttrAccess) : AnyRef = 
       proxy.exec (cmdLine, protocol, parms, socket, httpattrs)
       
-   override def mkSession (lang:String): String = Sessions.create(Scripster.sharedContext, lang).id 
+   override def mkSession (lang:String): String = 
+     Sessions.create(Scripster.sharedContext, lang).id 
 }
 
 /** default command handler - runs the entire line as a script */

@@ -20,13 +20,16 @@ import razie.base.scripting._
 
 /** the main scripster service (aka serlvet) */
 @SoaService(name = "scripster", descr = "scripging service", bindings = Array("http"))
-object ScripsterService {
+object ScripsterService extends ScripsterService 
+
+class ScripsterService {
   val cmdRSCRIPT = razie.AI ("run")
   val cmdRESET = razie.AI ("reset")
 
+  /** serve the current options as json */
   @SoaMethod(descr = "interactive", args = Array("sessionId", "line"))
   def options(sessionId: String, line: String) =
-    razie.Draw.html("[" + soptions(sessionId)(line).map ("\"" + _ + "\"").mkString (",") + "]")
+    razie.Draw.html("[" + soptions(sessionId)(line).map(_.replaceAll("\\\\", "\\\\\\\\")).map ("\"" + _ + "\"").mkString (",") + "]")
 
   @SoaMethod(descr = "exec a script", args = Array("sessionId", "language", "script"))
   def run(sessionId: String, language: String, script: String) = {
@@ -42,17 +45,21 @@ object ScripsterService {
     }
   }
 
-  @SoaMethod(descr = "create a new session and a simple pad", args = Array("lang"))
-  def pad(lang: String) = {
-    val c = Sessions.create (Scripster.sharedContext, lang)
-    new razie.draw.widgets.ScriptPad(lang = lang, run = mkATI(c.id) _, options = soptions(c.id) _, reset = mkRESET(c.id) _)
+//  @SoaMethod (descr="create a new session and a simple pad", args=Array("lang", "initial"))
+  def pad (lang:String, initial:String = null) = {
+    val c = Sessions.create(Scripster.sharedContext, lang)
+    if (initial == null || initial == "")
+      new razie.draw.widgets.ScriptPad (lang=lang,run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _)
+    else
+      new razie.draw.widgets.ScriptPad (lang=lang,run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, initial=initial)
   }
+
 
   def j(lang: String, ok: String, k: String, ak: String) = "','" + lang + "', '" + ok + "', '" + k + "', '" + ak + "')"
 
-  @SoaMethod(descr = "exec a script", args = Array("lang"))
+  @SoaMethod (descr="start a scripting session", args=Array("lang", "initial"))
   @SoaMethodSink
-  def session(ilang: String) = {
+  def session (ilang:String, initial:String) = {
     val notice = Comms.readStream (this.getClass().getResource("/public/scripster.html").openStream)
     class AI(name: String, label: String, tooltip: String, iconP: String = razie.Icons.UNKNOWN.name)
     val titleb = razie.Draw button (new razie.AI(name = "xx", label = "", iconP = "/public/small_logog.PNG", tooltip = ""), "http://scripster.razie.com")
@@ -64,7 +71,7 @@ object ScripsterService {
 
     val lang = Option(ilang) getOrElse "scala"
 
-    val p = pad(lang)
+    val p = pad(lang, initial)
     p.moreButtons =
       Draw.button(razie.AI("Witty"), "javascript:scripsterJump('http://cw.razie.com/cw/start?from=scripster" + j(lang, "", "", "")) :: Nil
     //      Draw.button(razie.AI("Witty"),   "javascript:scripsterJump('/cw/start?from=scripster"+j(lang,"", "", "")) :: Nil 

@@ -1,0 +1,3 @@
+fixed options issue where interpreter screws up for strings indented with spaces
+fixed options not showing up due to un-escaped \\
+
