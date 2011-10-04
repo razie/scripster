@@ -54,12 +54,44 @@ class ScripsterService {
       new razie.draw.widgets.ScriptPad (lang=lang,run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, initial=initial)
   }
 
+  def pad2 (lang:String, initial:String = null) = {
+    val c = Sessions.create(Scripster.sharedContext, lang)
+    if (initial == null || initial == "")
+      new razie.draw.widgets.ScriptPad2 (lang=lang,run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _)
+    else
+      new razie.draw.widgets.ScriptPad2 (lang=lang,run=mkATI(c.id) _, options=soptions(c.id) _, reset=mkRESET(c.id) _, initial=initial)
+  }
 
   def j(lang: String, ok: String, k: String, ak: String) = "','" + lang + "', '" + ok + "', '" + k + "', '" + ak + "')"
 
   @SoaMethod (descr="start a scripting session", args=Array("lang", "initial"))
   @SoaMethodSink
   def session (ilang:String, initial:String) = {
+    val notice = Comms.readStream (this.getClass().getResource("/public/scripster.html").openStream)
+    class AI(name: String, label: String, tooltip: String, iconP: String = razie.Icons.UNKNOWN.name)
+    val titleb = razie.Draw button (new razie.AI(name = "xx", label = "", iconP = "/public/small_logog.PNG", tooltip = ""), "http://scripster.razie.com")
+    titleb.style(NavLink.Style.JUST_ICON, NavLink.Size.SMALL)
+    val title = razie.Draw.table (2) (titleb, razie.Draw html "<b>Scripster - interactive scala script pad</b>") align (razie.draw.Align.LEFT)
+    title.packed = true
+    //    title.valign = "center"
+    //    val title = razie.Draw html "<img height=30 width=30 src=\"/public/small_logog.PNG\"/><b> Scripster - interactive scala script pad</b>"
+
+    val lang = Option(ilang) getOrElse "scala"
+
+    val p = pad2(lang, initial)
+    p.moreButtons =
+      Draw.button(razie.AI("Witty"), "javascript:scripsterJump('http://cw.razie.com/cw/start?from=scripster" + j(lang, "", "", "")) :: Nil
+    //      Draw.button(razie.AI("Witty"),   "javascript:scripsterJump('/cw/start?from=scripster"+j(lang,"", "", "")) :: Nil 
+
+    if (notice != null && notice.length > 0)
+      razie.Draw seq (title, p, razie.Draw html "<p><b>Notice</b>", razie.Draw htmlMemo notice)
+    else
+      razie.Draw seq (title, p)
+  }
+
+  @SoaMethod (descr="start a scripting session with OLD scriptpad", args=Array("lang", "initial"))
+  @SoaMethodSink
+  def session1 (ilang:String, initial:String) = {
     val notice = Comms.readStream (this.getClass().getResource("/public/scripster.html").openStream)
     class AI(name: String, label: String, tooltip: String, iconP: String = razie.Icons.UNKNOWN.name)
     val titleb = razie.Draw button (new razie.AI(name = "xx", label = "", iconP = "/public/small_logog.PNG", tooltip = ""), "http://scripster.razie.com")
@@ -91,7 +123,7 @@ class ScripsterService {
   @SoaMethod(descr = "create an applet session", args = Array("lang"))
   def appletSession(lang: String) = {
     val id = Scripster.createSession(lang, Scripster.sharedContext)
-    new razie.draw.widgets.ScriptPad(lang = lang, run = mkATI(id) _, options = soptions(id) _, reset = mkRESET(id) _, applet = true)
+    new razie.draw.widgets.ScriptPad2(lang = lang, run = mkATI(id) _, options = soptions(id) _, reset = mkRESET(id) _, applet = true)
   }
 
   @SoaMethod(descr = "reset the session", args = Array("sessionId"))

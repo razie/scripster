@@ -15,8 +15,8 @@ import com.razie.pub.lightsoa.HttpSoaBinding
 import razie.scripsterpro.ScripsterProService
 
 /** run a simple scripster server with no front-end */
-object MainScripster {
-  def main(argv: Array[String]) {
+object MainScripster extends App {
+//  def main(argv: Array[String]) {
     Scripster.createServer(4445, services =
       new HttpSoaBinding(ScripsterProService) :: Nil)
 
@@ -27,5 +27,5 @@ object MainScripster {
           new ScalaScript("1+2").eval(ScriptContextImpl.global)
         }
       }).start
-  }
+//  }
 }
