@@ -67,21 +67,25 @@ class ScripsterService {
   @SoaMethod(descr = "start a scripting session", args = Array("lang", "initial"))
   @SoaMethodSink
   def session(ilang: String, initial: String) = {
-    val notice = Comms.readStream(this.getClass().getResource("/public/scripster.html").openStream)
+    val notice = 
+        Option(this.getClass().getResource("/public/scripster.html")).
+        map(_.openStream).
+        map(Comms.readStream(_)).getOrElse("ERR Notice resource missing")
+    
     class AI(name: String, label: String, tooltip: String, iconP: String = razie.Icons.UNKNOWN.name)
     val titleb = razie.Draw button (new razie.AI(name = "xx", label = "", iconP = "/public/small_logog.PNG", tooltip = ""), "http://scripster.razie.com")
     titleb.style(NavLink.Style.JUST_ICON, NavLink.Size.SMALL)
     val title = razie.Draw.table(2)(titleb, razie.Draw html "<b>Scripster - interactive scala script pad</b>") align (razie.draw.Align.LEFT)
     title.packed = true
-    //    title.valign = "center"
-    //    val title = razie.Draw html "<img height=30 width=30 src=\"/public/small_logog.PNG\"/><b> Scripster - interactive scala script pad</b>"
 
     val lang = Option(ilang) getOrElse "scala"
 
-    val httpattrs = ExecutionContext.instance().getAttr("httpattrs")
-    val ua = httpattrs.asInstanceOf[AttrAccess].sa("User-Agent")
+    val msie = for (
+        h <- ExecutionContext.instance().get[AttrAccess]("httpattrs"); 
+        ua <- h.get[String]("User-Agent")) 
+      yield ua contains "MSIE"
 
-    val temp = if (ua contains "MSIE") {
+    val temp = if (msie.getOrElse(false)) {
       val p = pad(lang, initial)
       p.moreButtons =
         Draw.button(razie.AI("Witty"), "javascript:scripsterJump('http://cw.razie.com/cw/start?from=scripster" + j(lang, "", "", "")) :: Nil
