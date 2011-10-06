@@ -1,0 +1,4 @@
+ssh demo@cloud1.razie.com "export PATH=\$PATH:/usr/java/jdk1.6.0_18/bin; cd ~/scripster/app/run; . ./restart"
+
+ssh demo@cloud2.razie.com "export PATH=\$PATH:/usr/java/jdk1.6.0_18/bin; cd ~/scripster/app/run; . ./restart"
+
