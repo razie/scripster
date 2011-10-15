@@ -17,96 +17,142 @@ import razie.base._
 import razie.Draw
 import razie.draw.widgets.NavLink
 import razie.base.scripting._
+import razie.draw.DrawStream
+import razie.draw.HttpDrawStream
+import razie.draw.widgets.ScriptPad
+import razie.draw.widgets.ScriptPad2
 
 /** the main scripster service (aka serlvet) */
 @SoaService(name = "scripster", descr = "scripging service", bindings = Array("http"))
-object ScripsterService extends ScripsterService
+object ScripsterService extends ScripsterService {
+  def resource (name:String):String = 
+      Option(this.getClass().getResource(name)).
+        map(_.openStream).
+        map(Comms.readStream(_)).getOrElse("ERR Notice resource missing")
+
+}
 
 class ScripsterService {
   val cmdRSCRIPT = razie.AI("run")
   val cmdRESET = razie.AI("reset")
 
   /** serve the current options as json */
-  @SoaMethod(descr = "interactive", args = Array("sessionId", "line"))
-  def options(sessionId: String, line: String) =
-    razie.Draw.html("[" + soptions(sessionId)(line).map(_.replaceAll("\\\\", "\\\\\\\\")).map("\"" + _ + "\"").mkString(",") + "]")
+  @SoaMethod(descr = "interactive", args = Array("sessionId", "pos", "line"))
+  def options(sessionId: String, pos:String, line: String) =
+    razie.Draw.html("[" + soptions(sessionId)(line, pos.toInt).map(_.replaceAll("\\\\", "\\\\\\\\")).map("\"" + _ + "\"").mkString(",") + "]")
 
   @SoaMethod(descr = "exec a script", args = Array("sessionId", "language", "script"))
   def run(sessionId: String, language: String, script: String) = {
     val ret = Scripster.execWithin(90000)(language, script, sessionId)
 
     ret._1 match {
-      case s1 @ RazScript.RSSucc(res) => Option(res) map (x => Draw toString x.toString) getOrElse (Draw text "<ERROR: could not retrieve result - is null!>")
-      case s2 @ RazScript.RSSuccNoValue => Draw toString "Scripster.Status:...ok"
-      case s3 @ RazScript.RSError(err) => Draw toString "Error: " + err
-      case s4 @ RazScript.RSIncomplete => Draw toString "Scripster.Status:...incomplete"
+      case s1 @ RazScript.RSSucc(res)        => Option(res) map (x => Draw toString x.toString) getOrElse (Draw text "<ERROR: could not retrieve result - is null!>")
+      case s2 @ RazScript.RSSuccNoValue      => Draw toString "Scripster.Status:...ok"
+      case s3 @ RazScript.RSError(err)       => Draw toString "Error: " + err
+      case s4 @ RazScript.RSIncomplete       => Draw toString "Scripster.Status:...incomplete"
       case s4 @ RazScript.RSUnsupported(msg) => Draw toString "Scripster.Status:...Unsupported: " + msg
-      case _ => Draw text "Scripster.Status:??? the interpreter said what ??? : " + ret._1.toString
+      case _                                 => Draw text "Scripster.Status:??? the interpreter said what ??? : " + ret._1.toString
     }
   }
 
-  //  @SoaMethod (descr="create a new session and a simple pad", args=Array("lang", "initial"))
-  def pad(lang: String, initial: String = null) = {
+  def mkPad(
+      lang: String,
+      css:String="dark", // it's dark/light for now
+      applet:Boolean=false, 
+      initial:String = ScriptPad.INITIAL,
+      sessionId:String="0",
+      moreButtons : List[NavLink] = Nil,
+      makeButtons : () => Seq[NavLink] = ()=>Nil) = {
+    val scr = if (initial == null || initial.length() == 0) ScriptPad.INITIAL else initial
+    if (msie.getOrElse(false)) {
+      val p = new ScriptPad(lang = lang, run = mkATI(sessionId) _, options = soptions(sessionId) _, reset = mkRESET(sessionId) _, initial = scr,
+      css=css, moreButtons = moreButtons, makeButtons = makeButtons
+          )
+      Draw.seq( Draw html "NOTE: behaves and looks better on Chrome or Firefox :)", p)
+    } else {
+      val p = new ScriptPad2(lang = lang, run = mkATI(sessionId) _, options = soptions(sessionId) _, reset = mkRESET(sessionId) _, initial = scr,
+      css=css, moreButtons = moreButtons, makeButtons = makeButtons
+          )
+      Draw.seq(p)
+    }
+  }
+  
+  def pad(lang: String, initial: String = ScriptPad.INITIAL) = {
     val c = Sessions.create(Scripster.sharedContext, lang)
-    if (initial == null || initial == "")
-      new razie.draw.widgets.ScriptPad(lang = lang, run = mkATI(c.id) _, options = soptions(c.id) _, reset = mkRESET(c.id) _)
-    else
-      new razie.draw.widgets.ScriptPad(lang = lang, run = mkATI(c.id) _, options = soptions(c.id) _, reset = mkRESET(c.id) _, initial = initial)
+    new ScriptPad(lang = lang, run = mkATI(c.id) _, options = soptions(c.id) _, reset = mkRESET(c.id) _, initial = initial)
   }
 
-  def pad2(lang: String, initial: String = null) = {
+  def pad2(lang: String, initial: String = ScriptPad.INITIAL) = {
     val c = Sessions.create(Scripster.sharedContext, lang)
-    if (initial == null || initial == "")
-      new razie.draw.widgets.ScriptPad2(lang = lang, run = mkATI(c.id) _, options = soptions(c.id) _, reset = mkRESET(c.id) _)
-    else
-      new razie.draw.widgets.ScriptPad2(lang = lang, run = mkATI(c.id) _, options = soptions(c.id) _, reset = mkRESET(c.id) _, initial = initial)
+    new ScriptPad2(lang = lang, run = mkATI(c.id) _, options = soptions(c.id) _, reset = mkRESET(c.id) _, initial = initial)
   }
 
   def j(lang: String, ok: String, k: String, ak: String) = "','" + lang + "', '" + ok + "', '" + k + "', '" + ak + "')"
 
-  @SoaMethod(descr = "start a scripting session", args = Array("lang", "initial"))
-  @SoaMethodSink
-  def session(ilang: String, initial: String) = {
-    val notice = 
-        Option(this.getClass().getResource("/public/scripster.html")).
-        map(_.openStream).
-        map(Comms.readStream(_)).getOrElse("ERR Notice resource missing")
-    
+  def mkTitle = {
     class AI(name: String, label: String, tooltip: String, iconP: String = razie.Icons.UNKNOWN.name)
     val titleb = razie.Draw button (new razie.AI(name = "xx", label = "", iconP = "/public/small_logog.PNG", tooltip = ""), "http://scripster.razie.com")
     titleb.style(NavLink.Style.JUST_ICON, NavLink.Size.SMALL)
     val title = razie.Draw.table(2)(titleb, razie.Draw html "<b>Scripster - interactive scala script pad</b>") align (razie.draw.Align.LEFT)
     title.packed = true
+    title
+  }
+
+  def msie = for (
+    h <- ExecutionContext.instance().get[AttrAccess]("httpattrs");
+    ua <- h.get[String]("User-Agent")
+  ) yield ua contains "MSIE"
+
+  @SoaMethod(descr = "start a scripting session", args = Array("lang"))
+  @SoaStreamable (mime="text") // otherwise it gets wrapped in an html <body> with CSS and everything
+  def apisessioncreate(out:DrawStream, ilang: String) = {
+    val lang = Option(ilang) getOrElse "scala"
+    val id = Scripster.createSession(lang, Scripster.sharedContext)
+    out write id
+  }
+
+  @SoaMethod(descr = "close a scripting session", args = Array("sessionId"))
+  def apisessionclose(sessionId: String) = {
+    Scripster.closeSession(sessionId)
+  }
+
+  @SoaMethod(descr = "exec a script", args = Array("sessionId", "language", "script"))
+  @SoaStreamable (mime="text") // otherwise it gets wrapped in an html <body> with CSS and everything
+  def apirun(out:DrawStream, sessionId: String, language: String, script: String) = {
+    val ret = run(sessionId, language, script)
+    out write ret
+  }
+
+  @SoaMethod(descr = "start a scripting session", args = Array("lang", "initial"))
+  @SoaStreamable
+  @SoaMethodSink
+  def session(out:DrawStream, ilang: String, initial: String) = {
+    val notice = ScripsterService.resource ("/public/scripster.html")
+
+    val title = mkTitle
 
     val lang = Option(ilang) getOrElse "scala"
 
-    val msie = for (
-        h <- ExecutionContext.instance().get[AttrAccess]("httpattrs"); 
-        ua <- h.get[String]("User-Agent")) 
-      yield ua contains "MSIE"
-
-    val temp = if (msie.getOrElse(false)) {
-      val p = pad(lang, initial)
-      p.moreButtons =
+    val moreButtons =
         Draw.button(razie.AI("Witty"), "javascript:scripsterJump('http://cw.razie.com/cw/start?from=scripster" + j(lang, "", "", "")) :: Nil
-      Draw.seq(Draw.text("On I.E. you see the CodeMirror - try Chrome or Firefox"), p)
-    } else {
-      val p = pad2(lang, initial)
-      p.moreButtons =
-        Draw.button(razie.AI("Witty"), "javascript:scripsterJump('http://cw.razie.com/cw/start?from=scripster" + j(lang, "", "", "")) :: Nil
-      Draw.seq(p)
-    }
 
-    if (notice != null && notice.length > 0)
+    val c = Sessions.create(Scripster.sharedContext, lang)
+    val temp = mkPad (lang=lang, initial=initial, sessionId=c.id, moreButtons=moreButtons)
+
+    val res = if (notice != null && notice.length > 0)
       razie.Draw seq (title, temp, razie.Draw html "<p><b>Notice</b>", razie.Draw htmlMemo notice)
     else
       razie.Draw seq (title, temp)
+
+    // google ranking is relevant?
+    out.asInstanceOf[HttpDrawStream].addMeta ("<title>Try and test scala code - interactive scala script pad</title>")
+    out write res
   }
 
   @SoaMethod(descr = "start a scripting session with OLD scriptpad", args = Array("lang", "initial"))
   @SoaMethodSink
   def session1(ilang: String, initial: String) = {
-    val notice = Comms.readStream(this.getClass().getResource("/public/scripster.html").openStream)
+    val notice = ScripsterService.resource ("/public/scripster.html")
     class AI(name: String, label: String, tooltip: String, iconP: String = razie.Icons.UNKNOWN.name)
     val titleb = razie.Draw button (new razie.AI(name = "xx", label = "", iconP = "/public/small_logog.PNG", tooltip = ""), "http://scripster.razie.com")
     titleb.style(NavLink.Style.JUST_ICON, NavLink.Size.SMALL)
@@ -159,8 +205,8 @@ class ScripsterService {
     }
   }
 
-  private def soptions(sessionId: String)(s: String): Seq[String] = {
-    Scripster.options(sessionId, s).map(_.name)
+  private def soptions(sessionId: String)(s: String, pos:Int): Seq[String] = {
+    Scripster.options(sessionId, s, pos).map(_.name)
   }
 
 }

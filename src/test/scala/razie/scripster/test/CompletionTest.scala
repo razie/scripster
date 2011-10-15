@@ -27,7 +27,7 @@ object CompletionTest {
 
     new Thread(new Runnable {
       override def run(): Unit = {
-        val l = s.options(scr)
+        val l = s.options(scr, scr.length()-1)
         println("options for: \'" + scr + "\' are: " + l)
       }
     }).start()

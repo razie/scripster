@@ -34,7 +34,7 @@ object Sessions {
     }
   }
 
-  def create(parent: ScriptContext, lang: String) = {
+  def create(parent: ScriptContext, lang: String) = synchronized {
     clean
     if (map.size >= max) {
       val now = System.currentTimeMillis
@@ -51,13 +51,17 @@ object Sessions {
     c
   }
 
-  def get(key: String) = {
+  def get(key: String) = synchronized {
     val c = map.get(key)
     c.foreach(_.time = System.currentTimeMillis) // reset last access
     c
   }
 
-  def clean {
+  def remove(key: String) = synchronized {
+    map.remove(key)
+  }
+
+  def clean = synchronized {
     val time = System.currentTimeMillis
     val oldies = map.values.filter(_.time < time - life).toList
     oldies.foreach(x => map.remove(x.id))

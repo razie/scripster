@@ -1,5 +1,4 @@
-/**
- * ____    __    ____  ____  ____,,___     ____  __  __  ____
+/** ____    __    ____  ____  ____,,___     ____  __  __  ____
  *  (  _ \  /__\  (_   )(_  _)( ___)/ __)   (  _ \(  )(  )(  _ \           Read
  *   )   / /(__)\  / /_  _)(_  )__) \__ \    )___/ )(__)(  ) _ <     README.txt
  *  (_)\_)(__)(__)(____)(____)(____)(___/   (__)  (______)(____/    LICENSE.txt
@@ -7,6 +6,7 @@
 package razie.scripsterpro
 
 import com.razie.pub.lightsoa._
+import razie.draw._
 import com.razie.pub.comms._
 import com.razie.pub.base._
 import com.razie.pub.base.data._
@@ -71,7 +71,7 @@ object CodeWitterService {
   val cmdRESET = razie.AI("reset")
 
   /** simplest view - just the pad with links - it's a simple syntax-colored pad, view only  */
-  @SoaMethod(descr = "view a script", args = Array("lang", "ok", "css", "script"))
+  @SoaMethod(descr = "embed a script", args = Array("lang", "ok", "css", "script"))
   def embed(lang: String, ok: String, css: String, script: String) = {
     val s = if (script == null) "" else script
 
@@ -99,11 +99,11 @@ object CodeWitterService {
 
     Audit.recView(lang, k, css, script)
 
-    val p = new razie.draw.widgets.SimpleScriptPad(
+    val p = mkPad (
       lang = lang,
       css = css,
       makeButtons = mkFork(lang, k, "", ApiKey.genForMe, css, script) _,
-      content = script)
+      initial = script)
 
     razie.Draw seq (
       razie.Draw html "<p><b>Code Witter - tweet your witty code</b>",
@@ -112,22 +112,27 @@ object CodeWitterService {
       razie.Draw htmlMemo Pro.blahblah)
   }
 
-  /** view a script - it's a simple syntax-colored pad, with some text, view only */
-  @SoaMethod(descr = "view a script", args = Array("lang", "ok", "k", "api_key", "css", "script"))
+  @SoaMethod(descr = "create a script", args = Array("lang", "ok", "k", "api_key", "css", "script"))
   def create(lang: String, ok: String, k: String, api_key: String, css: String, script: String) = {
     Audit.recCapture1(lang, k, api_key, css, script)
 
-    val p = new razie.draw.widgets.SimpleScriptPad(
+    //    val p = new razie.draw.widgets.SimpleScriptPad(
+    //      lang = lang,
+    //      css = css,
+    //      makeButtons = mkCreate(lang, (if (ok == null) "" else ok), k, api_key, script, css) _,
+    //      content = script)
+    //
+    val p = mkPad (
       lang = lang,
       css = css,
       makeButtons = mkCreate(lang, (if (ok == null) "" else ok), k, api_key, script, css) _,
-      content = script)
+      initial = script)
 
-    razie.Draw seq (
-      razie.Draw html "<p><b>Code Witter - tweet your witty code</b>",
+    Draw seq (
+      Draw html "<p><b>Code Witter - tweet your witty code</b>",
       p,
-      razie.Draw htmlMemo Pro.notice,
-      razie.Draw htmlMemo Pro.blahblah)
+      Draw htmlMemo Pro.notice,
+      Draw htmlMemo Pro.blahblah)
   }
 
   def mkEmbed(lang: String, ok: String, css: String, script: String)(): Seq[NavLink] = {
@@ -151,8 +156,6 @@ object CodeWitterService {
       Allow.embed(Draw.button(razie.AI("Embed read-only"), "javascript:scripsterJump('/cw/quote?kind=embed" + j(lang, ok, k, api_key))) :::
       (
         if ("scala" == lang)
-          //            Draw.button(razie.AI("Link interactive"),   
-          //                  "javascript:scripsterJump('/cw/quote?kind=interactive"+j(lang,ok, k, api_key)) ::
           Draw.button(razie.AI("Try now!"),
           "javascript:scripsterJump('/scripsterpro/prosession?toto=lots" + j(lang, ok, k, api_key)) ::
           Nil
@@ -171,11 +174,12 @@ object CodeWitterService {
         else Nil)
   }
 
-  @SoaMethod(descr = "exec a script", args = Array("lang", "ok", "k", "api_key", "css", "script"))
+  @SoaMethod(descr = "fork1", args = Array("lang", "ok", "k", "api_key", "css", "script"))
   def fork1(lang: String, ok: String, k: String, api_key: String, css: String, script: String) = {
     ApiKey.validate(api_key)
-    val notice1 = Comms.readStream(this.getClass().getResource("/public/scripsterpro/scripsterpro-capture.html").openStream)
-    val notice2 = Comms.readStream(this.getClass().getResource("/public/scripsterpro/scripsterpro-bottom.html").openStream)
+    val notice1 = ScripsterService.resource ("/public/scripsterpro/scripsterpro-capture.html")
+    val notice2 = ScripsterService.resource ("/public/scripsterpro/scripsterpro-bottom.html")
+
     val formTitle = razie.AI("Capturester")
     val next = new Sati(Pro.BASESVCNAME, razie.AI("fork"), razie.AA("lang", lang, "api_key", api_key, "ok", ok, "script", Comms.encode(script)))
 
@@ -189,7 +193,7 @@ object CodeWitterService {
       Draw html Pro.blahblah)
   }
 
-  @SoaMethod(descr = "exec a script", args = Array("lang", "ok", "api_key", "email", "css", "script"))
+  @SoaMethod(descr = "fork a script", args = Array("lang", "ok", "api_key", "email", "css", "script"))
   def fork(lang: String, ok: String, api_key: String, email: String, css: String, script: String) = {
     ApiKey.validate(api_key)
     val k = Pro.generateKey(email)
@@ -197,14 +201,14 @@ object CodeWitterService {
   }
 
   /** this is the main entry point for the pro scripster */
-  @SoaMethod(descr = "exec a script", args = Array("lang", "api_key", "email", "css", "kind", "script"))
+  @SoaMethod(descr = "capture script", args = Array("lang", "api_key", "email", "css", "kind", "script"))
   def capture(lang: String, api_key: String, email: String, css: String, kind: String, script: String) = {
     ApiKey.validate(api_key)
     val k = Pro.generateKey(email)
     create(lang = lang, ok = null, k = k, api_key = api_key, css = css, script = if (script == null) "" else Comms.decode(script))
   }
 
-  @SoaMethod(descr = "exec a script")
+  @SoaMethod(descr = "register")
   def register() {
     // TODO 
     Draw html "<p><font color=red>WELCOME - consider yourself registered! Kiddin' - use api_key=TEST for now...</font>"
@@ -212,23 +216,27 @@ object CodeWitterService {
 
   // script is given when coming from scripster
   @SoaMethod(descr = "exec a script", args = Array("lang", "script"))
+  @SoaStreamable
   @SoaMethodSink
-  def start(_lang: String, script: String) = {
-    val notice1 = Comms.readStream(this.getClass().getResource("/public/scripsterpro/scripsterpro-capture.html").openStream)
-    val notice2 = Comms.readStream(this.getClass().getResource("/public/scripsterpro/scripsterpro-bottom.html").openStream)
+  def start(out: DrawStream, _lang: String, script: String) = {
+    val notice1 = ScripsterService.resource ("/public/scripsterpro/scripsterpro-capture.html")
+    val notice2 = ScripsterService.resource ("/public/scripsterpro/scripsterpro-bottom.html")
     val formTitle = razie.AI("Capturester")
     val next = new Sati(Pro.BASESVCNAME, razie.AI("capture"), razie.AA("api_key", ApiKey.genForMe, "script", if (script == null) "" else Comms.encode(script)))
 
     Audit.recStart1()
 
     val lang = if (_lang == null || _lang == "") "scala" else _lang
-    Draw seq (
+    val res = Draw seq (
       Draw html notice1,
       Draw.form(formTitle, next, razie.AA("lang:String", lang, "css:String", "dark", "email:String", "anonymous Joe")).
       enumerated("lang", Pro.langs).enumerated("css", "dark,light").labels(Pro.captureLabels).liner,
       Draw html notice2,
       Draw html Pro.blahblah,
       Draw html "<p>If you can't figure out when you'd use CodeWitter, read <a href=\"/cw/when\">this</>.")
+
+    out.asInstanceOf[HttpDrawStream].addMeta ("<title>Try and share scala code</title>")
+    out write res
   }
 
   // script is given when coming from scripster

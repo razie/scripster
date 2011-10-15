@@ -35,7 +35,8 @@ class ScalaScriptTest extends MustMatchers {
   // options
   @Test def testoptions = expect (true) {
     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
-    ctx.options ("java.lang.Sys") contains ("System")
+    val scr = "java.lang.Sys"
+    ctx.options (scr, scr.length()-1) contains ("System")
   }
 
   @Test def testdef = expect (5) {

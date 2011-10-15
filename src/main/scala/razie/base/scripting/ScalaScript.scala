@@ -32,11 +32,13 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   }
 
   /** content assist options */
-  override def options(scr: String): java.util.List[String] = {
+  override def options(scr: String, pos:Int): java.util.List[String] = {
     ScalaScript.bind(this, parser)
     val l = new java.util.ArrayList[String]()
-    val newscr = scr.trim
-    val output = comp.completer().complete(newscr, newscr.length-1)
+    val newscr1 = scr.replaceFirst("^[ \t]+", "")
+    val newscr2 = newscr1.trim
+    val newpos = pos-(scr.length-newscr1.length)
+    val output = comp.completer().complete(newscr2, newpos)
     import scala.collection.JavaConversions._
     l.addAll(output.candidates)
     l

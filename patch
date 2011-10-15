@@ -1,0 +1,6 @@
+scp dist/codewitter.jar dist/scripster-dist.jar demo@cloud1.razie.com:scripster/app/run/lib
+ssh demo@cloud1.razie.com "export PATH=\$PATH:/usr/java/jdk1.6.0_18/bin; cd ~/scripster/app/run; . ./patch"
+
+scp dist/codewitter.jar dist/scripster-dist.jar demo@cloud2.razie.com:scripster/app/run/lib/
+ssh demo@cloud2.razie.com "export PATH=\$PATH:/usr/java/jdk1.6.0_18/bin; cd ~/scripster/app/run; . ./patch"
+

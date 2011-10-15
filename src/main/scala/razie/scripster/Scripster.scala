@@ -29,12 +29,14 @@ import razie.base.scripting._
  * Further customization options below.
  * 
  * To limit the objects available to clients, please reset the sharedContext:
- * <code>
+ * 
+ * [[http://bit.ly/rqcDFr try now]]
+ * {{{
  * val myContext = ScriptFactory.mkContext(null) // null means no parent for this one
  * myContext.put ("obj1", obj1)
  * ... // add more objects 
  * Scripster.sharedContext = myContext
- * </code>
+ * }}}
  * 
  * NOTE that this is truly a shared context, shared across sessions. Changing the state of objects 
  * here will be shared.
@@ -110,6 +112,9 @@ object Scripster extends razie.Logging {
 
   /** reset an existing session */   
   def reset (sessionId:String) = Sessions.get(sessionId).map(_.clear)
+
+  /** reset an existing session */   
+  def closeSession (sessionId:String) = Sessions.remove(sessionId).map(x=>"Ok").getOrElse("No such session")
 
   /** session-based execution 
    * 
@@ -195,10 +200,10 @@ object Scripster extends razie.Logging {
    }
 
    
-  def options (sessionId:String, line:String) = {
+  def options (sessionId:String, line:String, pos:Int) = {
     Sessions get sessionId match {
        case Some(session) => {
-    val l = session.ctx.options (line)
+    val l = session.ctx.options (line, pos)
 
     import scala.collection.JavaConversions._
    

@@ -41,7 +41,22 @@ class SimpleScriptTest extends MustMatchers {
   // options
   @Test def testoptions = expect(true) {
     val ctx = ScalaScriptContext("a" -> 1, "b" -> 2)
-    ctx.options("java.lang.Sys") contains ("System")
+    val scr = "java.lang.Sys"
+    ctx.options(scr, scr.length()-1) contains ("System")
+  }
+
+  // options with white space
+  @Test def testoptionsws = expect(true) {
+    val ctx = ScalaScriptContext("a" -> 1, "b" -> 2)
+    val scr = "\t  java.lang.Sys"
+    ctx.options(scr, scr.length()-1) contains ("System")
+  }
+
+  // options with white space
+  /*@Test*/ def testoptionsmiddle = expect(true) {
+    val ctx = ScalaScriptContext("a" -> 1, "b" -> 2)
+    val scr = "   java.lang.Sys == 34"
+    ctx.options(scr, 16) contains ("System")
   }
 
   // export new variables back into context

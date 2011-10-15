@@ -1,0 +1,6 @@
+cp -r ~/w/razbase/20widgets/src/main/resources/public ~/w/scripster/bin
+cp -r ~/w/scripster/src/main/resources/public ~/w/scripster/bin
+
+cp -r ~/w/razbase/20widgets/src/main/resources/public ~/w/scripster
+cp -r ~/w/scripster/src/main/resources/public ~/w/scripster
+

@@ -24,8 +24,8 @@ class CS (proxy:LightContentServer) extends LightContentServer {
    else  
       proxy.dflt = new SH()
    
-   override def options (s:String, sessionId:String) : Seq[ActionItem] = 
-      Scripster.options(sessionId, s)
+   override def options (s:String, pos:Int, sessionId:String) : Seq[ActionItem] = 
+      Scripster.options(sessionId, s, pos)
    
    override def exec(cmdLine:String, protocol:String, parms:java.util.Properties, socket:MyServerSocket, httpattrs:AttrAccess) : AnyRef = 
       proxy.exec (cmdLine, protocol, parms, socket, httpattrs)
