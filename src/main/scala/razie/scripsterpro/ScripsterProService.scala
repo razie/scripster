@@ -145,9 +145,11 @@ object Pro {
       AI("submit", "continue") :: Nil
 }
 
-case class Sati(svc: String, ai: ActionItem, a: AttrAccess) extends ServiceActionToInvoke("", svc, ai, a) {
-  def this(svc: String, ai: ActionItem) = this (svc, ai, new AttrAccessImpl()) // TODO use some EMPTY constant
+case class Sati(url:String, svc: String, ai: ActionItem, a: AttrAccess) extends ServiceActionToInvoke(url, svc, ai, a) {
+  // TODO use some EMPTY constant
   // TODO add shortcuts for local execution 
+  def this(svc: String, ai: ActionItem, a:AttrAccess) = this ("", svc, ai, new AttrAccessImpl()) 
+  def this(svc: String, ai: ActionItem)               = this ("", svc, ai, new AttrAccessImpl()) 
 }
 
 /** the main scripster service (aka serlvet) */

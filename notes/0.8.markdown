@@ -1,6 +1,0 @@
-fixed options issue where interpreter screws up for strings indented with spaces
-fixed options not showing up due to un-escaped \\
-changed from CodeMirror to ACE as editor
-still use CodeMirror on IE
-added titles for the main pages and cleaned up some code
-fixed code assisst in the middle of a string

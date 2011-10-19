@@ -23,6 +23,7 @@ import razie.XP
 import razie.AI
 import razie.scripster._
 import razie.draw.widgets.NavLink
+import razie.AA
 
 /** API CANNOT change - they will be exposed to public. see cw_api.html for exact API defn */
 @SoaService(name = "cw", descr = "Pro scripting service", bindings = Array("http"))
@@ -116,12 +117,6 @@ object CodeWitterService {
   def create(lang: String, ok: String, k: String, api_key: String, css: String, script: String) = {
     Audit.recCapture1(lang, k, api_key, css, script)
 
-    //    val p = new razie.draw.widgets.SimpleScriptPad(
-    //      lang = lang,
-    //      css = css,
-    //      makeButtons = mkCreate(lang, (if (ok == null) "" else ok), k, api_key, script, css) _,
-    //      content = script)
-    //
     val p = mkPad (
       lang = lang,
       css = css,
@@ -136,15 +131,14 @@ object CodeWitterService {
   }
 
   def mkEmbed(lang: String, ok: String, css: String, script: String)(): Seq[NavLink] = {
-    val a = razie.AA("lang", lang, "ok", ok, "css", css, "script", script)
+    val a = AA("lang", lang, "ok", ok, "css", css, "script", script)
 
-    Draw.button(Sati(Pro.BASESVCNAME, razie.AI("view", "Fork"), a)) ::
-      Nil :::
-      (
-        if ("scala" == lang)
-          Draw.button(Sati("scripsterpro", razie.AI("prosession", "Try"), a)) :: Nil
-        else
-          Nil)
+   (if ("scala" == lang)
+      Draw.button(new Sati("scripsterpro", razie.AI("prosession", "Try now"), a)) :: Nil
+    else
+      Nil) :::
+    Draw.button(new Sati(Pro.BASESVCNAME, razie.AI("view", "Fork"), a)) ::
+    Draw.button(AI("Powered by tryscala.com"), "http://www.tryscala.com") :: Nil
   }
 
   def j(lang: String, ok: String, k: String, ak: String) = "','" + lang + "', '" + ok + "', '" + k + "', '" + ak + "')"

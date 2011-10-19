@@ -23,24 +23,29 @@ class PerfLocalhostTest extends MustMatchers {
     4
   }
 
-  def create = new ServiceActionToInvoke("http://localhost:4445", "scripster", razie.AI("apisessioncreate", "apisessioncreate"),
+  val URL = "http://localhost:4445"
+//  val URL = "http://www.tryscala.com"
+    
+  def create = new ServiceActionToInvoke(URL, "scripster", razie.AI("apisessioncreate", "apisessioncreate"),
     razie.AA("lang", "javascript", "api_key", "kk", "script", "1+2", "css", "dark"))
-  def apirun(session: String) = new ServiceActionToInvoke("http://localhost:4445", "scripster", razie.AI("apirun", "apirun"),
+  def apirun(session: String) = new ServiceActionToInvoke(URL, "scripster", razie.AI("apirun", "apirun"),
     razie.AA("language", "scala", "sessionId", session, "script", "1+2"))
-  def options(session: String) = new ServiceActionToInvoke("http://localhost:4445", "scripster", razie.AI("options", "options"),
-    razie.AA("language", "scala", "sessionId", session, "line", "1."))
-  def close(session: String) = new ServiceActionToInvoke("http://localhost:4445", "scripster", razie.AI("apisessionclose", "apisessionclose"),
+  def options(session: String) = new ServiceActionToInvoke(URL, "scripster", razie.AI("options", "options"),
+    razie.AA("language", "scala", "sessionId", session, "line", "1.", "pos", 2.toString))
+  def close(session: String) = new ServiceActionToInvoke(URL, "scripster", razie.AI("apisessionclose", "apisessionclose"),
     razie.AA("language", "scala", "sessionId", session, "script", "1+2"))
-  //  /scripster/run?language=scala&sessionId=1318469939099&script=1%2B2 HTTP/1.1
 
   val BIGL = 1
   val THREADS = Sessions.max-1
-  val SMALL = 1
+  val SMALL = 10
+  
+  var curr = 0
+  val start=System.currentTimeMillis()
 
   @Test def testsimple100 = expect (3 * BIGL * THREADS * SMALL) {
     var e: Throwable = null
 
-    (for (i <- 0 until BIGL) yield {
+    val res = (for (i <- 0 until BIGL) yield {
       val ls = razie.Threads.forkjoin(0 until THREADS) { x: Int =>
         (try {
           for (i <- 0 until SMALL) yield {
@@ -49,8 +54,9 @@ class PerfLocalhostTest extends MustMatchers {
             val o = Snakk.htmlBody (Snakk.url(options(s).makeActionUrl()))
             println ("options: "+o)
             val r = Snakk.body (Snakk.url(apirun(s).makeActionUrl()))
-            println ("result: "+r)
-            close(s).act(razie.AA())
+            synchronized { curr += 1 }
+            println ("session "+curr+" result: "+r)
+            val res = Snakk.htmlBody (Snakk.url(close(s).makeActionUrl()))
             r.toString.toInt
           }
         } catch { case s @ _ if (e != null) => { e = s; Seq(0) } }).sum
@@ -61,6 +67,11 @@ class PerfLocalhostTest extends MustMatchers {
 
       (for (x <- ls; s <- x) yield s).sum
     }).sum
+    
+    println ("WE DID: "+BIGL*THREADS*SMALL+" sessions... "+((3*BIGL*THREADS*SMALL - res)/3)+" FAILED!")
+    val end=System.currentTimeMillis()
+    println ("Performance: %.2f sessions per second.".format((BIGL*THREADS*SMALL)*1000.0/(end-start)))
+    res
   }
 
 }
