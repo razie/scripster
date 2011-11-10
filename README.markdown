@@ -9,7 +9,7 @@
 What?
 =====
 
-Interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.homecloud.ca/scripster](http://wiki.homecloud.ca/scripster). See [building instructions](blob/master/Building.markdown).
+Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.coolscala.ca/scripster](http://wiki.coolscala.ca/scripster). Try it online at [http://www.tryscala.com](tryscala.com) or see [building instructions](blob/master/Building.markdown).
 
 Why?
 ----
