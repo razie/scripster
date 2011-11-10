@@ -34,8 +34,12 @@ Roadmap
 -------
 May add some more scripting languages in the future but otherwise I don't think this will evolve.
 
-It may also get nicer.
-
+Features for when I (or you can) find the time:
+- store and access local scripts
+- sign the scripts and encrypt them for safe emailing
+- more secure access
+- use servlet API for embedding in normal servlet-based apps
+- domain local and domain signed script quoting
 
 Examples
 ========
