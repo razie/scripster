@@ -1,6 +1,14 @@
-Biggest change: upgraded from CodeMirror to ACE as editor
+Biggest change: upgraded from CodeMirror to ACE (former Bespin) as editor... on browsers other than MSIE... need to work on that
+
 fixed options issue where interpreter screws up for strings indented with spaces
+
 fixed options not showing up due to un-escaped \\
-still use CodeMirror on IE
+
+still use CodeMirror on IE and embedded
+
 added titles for the main pages and cleaned up some code
+
 fixed code assisst in the middle of a string
+
+started to revive the embedding option - needs a bit of work
+

@@ -42,7 +42,7 @@
             <zipfileset src="${libm}/base_2.9.1-0.5-SNAPSHOT.jar"/>
             <zipfileset src="${libm}/razweb_2.9.1-0.5-SNAPSHOT.jar"/>
             <zipfileset src="${w}/scripster/target/scala_2.9.1/scripster_2.9.1-0.8-SNAPSHOT.jar"/>
-            <zipfileset src="${w}/gremlins/target/scala_2.9.1/gremlins_2.9.1-0.5-SNAPSHOT.jar"/>
+            <zipfileset src="${w}/gremlins/core/target/scala_2.9.1/gremlins-core_2.9.1-0.5-SNAPSHOT.jar"/>
             <zipfileset src="${w}/snakked/core/target/scala_2.9.1/snakk-core_2.9.1-0.3-SNAPSHOT.jar"/>
             <zipfileset src="${libm}/json-20090211.jar"/>
         </jar>

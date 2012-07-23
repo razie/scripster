@@ -23,7 +23,7 @@ How?
 
 In the sbt Project file for your project (project/build/Project.scala), add the dependency: 
 
-    val scrip = "com.razie" % "scripster_2.9.1" % "0.8-SNAPSHOT"
+    val scrip = "com.razie" % "scripster_2.9.1" % "0.8.1-SNAPSHOT"
 
 If you want to build it, see [building instructions](blob/master/Building.markdown).
 
@@ -48,14 +48,14 @@ Many examples are in the junits: test_src/razie/scripster/test/
 
 Put some objects in a context and run a simple scala script:
 
-    val context = new ScalaScriptContext(null, "a", "1", "b", "2")
-    ScriptScala ("a+b").eval (context) getOrElse "?"
+    val ctx = new ScalaScriptContext("a" -> 1, "b" -> 2)
+    ScriptScala ("a+b").eval (ctx) getOrElse "?"
 
 Create and add variables to the context, to pass to the next script:
 
-     val ctx = new ScalaScriptContext(null, "a", "1", "b", "2")
-     ScriptScala ("val c = a+b").interactive (ctx) 
-     ScriptScala ("c").interactive (ctx) getOrElse "?"
+    val ctx = new ScalaScriptContext("a" -> 1, "b" -> 2)
+    ScriptScala ("val c = a+b").interactive (ctx) 
+    ScriptScala ("c").interactive (ctx) getOrElse "?"
 
 Create a scripster server: razie.scripster.MainScripster.scala
 

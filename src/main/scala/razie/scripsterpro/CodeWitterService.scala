@@ -216,7 +216,7 @@ object CodeWitterService {
     val notice1 = ScripsterService.resource ("/public/scripsterpro/scripsterpro-capture.html")
     val notice2 = ScripsterService.resource ("/public/scripsterpro/scripsterpro-bottom.html")
     val formTitle = razie.AI("Capturester")
-    val next = new Sati(Pro.BASESVCNAME, razie.AI("capture"), razie.AA("api_key", ApiKey.genForMe, "script", if (script == null) "" else Comms.encode(script)))
+    val next = new Sati("", Pro.BASESVCNAME, razie.AI("capture"), razie.AA("api_key", ApiKey.genForMe, "script", if (script == null) "" else Comms.encode(script)))
 
     Audit.recStart1()
 

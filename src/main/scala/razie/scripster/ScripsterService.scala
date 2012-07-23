@@ -65,7 +65,7 @@ class ScripsterService {
     sessionId: String = "0",
     moreButtons: List[NavLink] = Nil,
     makeButtons: () => Seq[NavLink] = () => Nil) = {
-    val scr = if (initial == null || initial.length() == 0) ScriptPad.INITIAL else initial
+    val scr = if (initial == null) ScriptPad.INITIAL else initial
     if (msie.getOrElse(false)) {
       val p = new ScriptPad(lang = lang, run = mkATI(sessionId) _, options = soptions(sessionId) _, reset = mkRESET(sessionId) _, initial = scr,
         css = css, moreButtons = moreButtons, makeButtons = makeButtons)
@@ -120,6 +120,16 @@ class ScripsterService {
   @SoaStreamable(mime = "text") // otherwise it gets wrapped in an html <body> with CSS and everything
   def apirun(out: DrawStream, sessionId: String, language: String, script: String) = {
     val ret = run(sessionId, language, script)
+    out write ret
+  }
+
+  @SoaMethod(descr = "exec a script without sessions or anything", args = Array("language", "script"))
+  @SoaStreamable(mime = "text") // otherwise it gets wrapped in an html <body> with CSS and everything
+  def apijustrun(out: DrawStream, ilang: String, script: String) = {
+    val lang = Option(ilang) getOrElse "scala"
+    val sessionId = Scripster.createSession(lang, Scripster.sharedContext)
+    val ret = run(sessionId, lang, script)
+    Scripster.closeSession(sessionId)
     out write ret
   }
 

@@ -1,5 +1,5 @@
 
-[Razie's Scripster](http://github.com/razie/scripster) is an interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.homecloud.ca/scripster](http://wiki.homecloud.ca/scripster). Try it at http://tryscala.org
+[Razie's Scripster](http://github.com/razie/scripster) is an interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.homecloud.ca/scripster](http://wiki.homecloud.ca/scripster). Try it at [http://www.tryscala.com](http://www.tryscala.com).
 
 Why? So anyone can interact with a running application, having access to all or some of the application's objects. 
 
