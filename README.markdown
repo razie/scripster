@@ -25,7 +25,7 @@ In the sbt Project file for your project (project/build/Project.scala), add the 
 
     val scrip = "com.razie" % "scripster_2.9.1" % "0.8-SNAPSHOT"
 
-If you want to build it, see Building.markdown
+If you want to build it, see [building instructions](blob/master/Building.markdown).
 
 If instead you just want to run it or add it to your runnables as a single Jar file, use the latest distribution jar from the github downloads and use it in the classpath.
 
@@ -65,8 +65,9 @@ Create a scripster server: razie.scripster.MainScripster.scala
 Baddies
 =======
 
-There's no security - need to add some.
-There's no mapping to a "normal" servlet. Jetty support etc.
+There's only basic policy-file based security - need to add some, especially per-script permissions. The simplest way I see to do that is to create a "client" package for all script code and grant it only specific permissions...
+
+There's no mapping to a "normal" servlet. Jetty support etc. There is however a ScripsterService class that could serve as the basis for that. I might soon entertain moving this to play.
 
 
 Architectural notes
