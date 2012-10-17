@@ -49,13 +49,13 @@ Many examples are in the junits: test_src/razie/scripster/test/
 Put some objects in a context and run a simple scala script:
 
     val ctx = new ScalaScriptContext("a" -> 1, "b" -> 2)
-    ScriptScala ("a+b").eval (ctx) getOrElse "?"
+    ScalaScript ("a+b").eval (ctx) getOrElse "?"
 
 Create and add variables to the context, to pass to the next script:
 
     val ctx = new ScalaScriptContext("a" -> 1, "b" -> 2)
-    ScriptScala ("val c = a+b").interactive (ctx) 
-    ScriptScala ("c").interactive (ctx) getOrElse "?"
+    ScalaScript ("val c = a+b").interactive (ctx) 
+    ScalaScript ("c").interactive (ctx) getOrElse "?"
 
 Create a scripster server: razie.scripster.MainScripster.scala
 
