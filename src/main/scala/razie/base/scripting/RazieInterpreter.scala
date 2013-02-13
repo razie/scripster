@@ -6,20 +6,18 @@
  */
 package razie.base.scripting
 
-import scala.tools.{ nsc => nsc }
-import scala.tools.nsc.{ InterpreterResults => IR }
-import scala.tools.nsc.reporters.ConsoleReporter
-import scala.tools.nsc.interpreter.IMain
+import scala.tools.nsc
+import scala.tools.nsc.interpreter.IR
 import scala.tools.nsc.interpreter.ReplReporter
 
 /** hacking the scala interpreter - this will accumulate errors and retrieve all new defined values */
 class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
-  import memberHandlers._
+import memberHandlers._
 
   // What Razie needs in Request
   case class PublicRequest(usedNames: List[String], valueNames: List[String], extractionValue: Option[Any], err: List[String])
 
-  def lastRequest: Option[PublicRequest] =
+  def razlastRequest: Option[PublicRequest] =
     prevRequestList.lastOption map (l =>
       PublicRequest(
         l.referencedNames.map(_.decode),
@@ -32,7 +30,7 @@ class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
   private var errAccumulator = new scala.collection.mutable.ListBuffer[String]()
 
   /** hacked reporter - accumulates erorrs... */
-  lazy override val reporter: ConsoleReporter = new ReplReporter(this) {
+  lazy override val reporter = new ReplReporter(this) {
     override def printMessage(msg: String) {
       errAccumulator append msg
       out println msg
@@ -46,13 +44,13 @@ class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
     beQuietDuring {
       interpret(code) match {
         case IR.Success =>
-          try lastRequest.flatMap(_.extractionValue).get.asInstanceOf[T]
+          try razlastRequest.flatMap(_.extractionValue).get.asInstanceOf[T]
           catch { case e: Exception => out println e; throw e }
         case IR.Error => {
           val c =
-            if (lastRequest.get.valueNames.contains("lastException"))
+            if (razlastRequest.get.valueNames.contains("lastException"))
               RazScript.RSError(evalExpr[Exception]("lastException").getMessage)
-            else RazScript.RSError(lastRequest.get.err mkString "\n\r")
+            else RazScript.RSError(razlastRequest.get.err mkString "\n\r")
           errAccumulator.clear
           throw new IllegalStateException(c.err)
         }
@@ -66,15 +64,15 @@ class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
     beQuietDuring {
       interpret(s.script) match {
         case IR.Success =>
-          if (lastRequest map (_.extractionValue.isDefined) getOrElse false)
-            RazScript.RSSucc(lastRequest.get.extractionValue get)
+          if (razlastRequest map (_.extractionValue.isDefined) getOrElse false)
+            RazScript.RSSucc(razlastRequest.get.extractionValue get)
           else
             RazScript.RSSuccNoValue
         case IR.Error => {
           val c =
-            if (lastRequest.get.valueNames.contains("lastException"))
+            if (razlastRequest.get.valueNames.contains("lastException"))
               RazScript.RSError(evalExpr[Exception]("lastException").getMessage)
-            else RazScript.RSError(lastRequest.get.err mkString "\n\r")
+            else RazScript.RSError(razlastRequest.get.err mkString "\n\r")
           errAccumulator.clear
           c
         }
@@ -88,7 +86,7 @@ class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
     val ret = new scala.collection.mutable.HashMap[String, Any]()
     // TODO get the value of x nicer
     for (
-      x <- lastRequest.get.valueNames if (x != "lastException" && !x.startsWith("synthvar$") && x != "ctx")
+      x <- razlastRequest.get.valueNames if (x != "lastException" && !x.startsWith("synthvar$") && x != "ctx")
     ) {
       val xx = (x -> evalExpr[Any](x))
       razie.Debug("bound: " + xx)
@@ -100,42 +98,25 @@ class RazieInterpreter(s: nsc.Settings) extends nsc.Interpreter(s) {
 
 }
 
-/** utilities */
-object RazieInterpreter {
-  /** make a new parser/interpreter instance using the given error logger */
-  def mkParser(errLogger: String => Unit) = {
-    // when in managed class loaders we can't just use the javacp
-    // TODO make this work for any managed classloader - it's hardcoded for sbt
-    val env = {
-      if (ScalaScript.getClass.getClassLoader.getResource("app.class.path") != null) {
-        razie.Debug("Scripster using app.class.path and boot.class.path")
-        // see http://gist.github.com/404272
-        val settings = new nsc.Settings(errLogger)
-        settings embeddedDefaults getClass.getClassLoader
-        razie.Debug("Scripster using classpath: " + settings.classpath.value)
-        razie.Debug("Scripster using boot classpath: " + settings.bootclasspath.value)
-        settings
-      } else {
-        razie.Debug("Scripster using java classpath")
-        val env = new nsc.Settings(errLogger)
-        env.usejavacp.value = true
-        env
-      }
-    }
-
-    val p = new RazieInterpreter(env)
-    p.setContextClassLoader
-    p
-  }
-
-}
-
 object Main34 extends App {
-  val ctx = ScalaScriptContext("a" -> 1)
-  val res = ScalaScript("val c = a+-+b").eval(ctx) match {
+  val ctx = ScalaScriptContext("a" -> 1)//, "b" -> 2)
+  val res = ScalaScript("val c = a+b").eval(ctx) match {
     case RazScript.RSError(msg) => msg
     case _ => ""
   }
   println(res)
   res
+  
+  val pr = ("xxxxxxxxxxinterpret" + (for (i <- (0 until 5).toList) yield (razie.Timer {
+    println("yyy " + ctx.parser.interpret("1+2"))
+    })).mkString("\n")+"\n") ::
+  ("xxxxxxxxxxevalExpr" + (for (i <- (0 until 5).toList) yield (razie.Timer {
+    ctx.parser.evalExpr[Any]("1+2")
+    })).mkString("\n")+"\n") ::
+  ("xxxxxxxxxxeval" + (for (i <- (0 until 5).toList) yield (razie.Timer {
+    ctx.bind(ctx,ctx.parser)
+//    ScalaScript("1+2").eval(ctx)
+    })).mkString("\n")+"\n") :: Nil
+    
+    println(pr)
 }

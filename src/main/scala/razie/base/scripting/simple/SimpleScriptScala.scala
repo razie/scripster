@@ -7,7 +7,9 @@
 package razie.base.scripting.simple
 
 import scala.tools.{ nsc => nsc }
-import scala.tools.nsc.{ InterpreterResults => IR, Settings }
+//import scala.tools.nsc.{ InterpreterResults => IR, Settings }
+import scala.tools.nsc.interpreter.IR
+import scala.tools.nsc.Settings 
 
 /* self-contained outline of the scripster, useful when opening tickets etc - otherwise not used... */
 
@@ -185,7 +187,7 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
   var errAccumulator = new scala.collection.mutable.ListBuffer[String]()
 
   /** hacked reporter - accumulates erorrs... */
-  override lazy val reporter: ConsoleReporter = new ReplReporter(this) {
+  override lazy val reporter = new ReplReporter(this) {
     override def printMessage(msg: String) {
       errAccumulator append msg
       out println msg
@@ -197,7 +199,7 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
   // 1. Request is private. I need: dependencies (usedNames?) newly defined values (boundNames?)
   // the resulting value and the error message(s) if any
   // 2. Can't get the last request
-  def lastRequest: Option[PublicRequest] =
+  def razlastRequest: Option[PublicRequest] =
     prevRequestList.lastOption map (l =>
       //       PublicRequest (l.usedNames.map(_.decode), l.valueNames.map(_.decode), l.extractionValue, errAccumulator.toList)
       PublicRequest(
@@ -219,9 +221,9 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
     beQuietDuring {
       interpret(code) match {
         case IR.Success =>
-          val x = lastRequest.get
+          val x = razlastRequest.get
           val b = x.extractionValue
-          try lastRequest.flatMap(_.extractionValue).get.asInstanceOf[T]
+          try razlastRequest.flatMap(_.extractionValue).get.asInstanceOf[T]
           catch { case e: Exception => out println e; throw e }
         case _ => throw new IllegalStateException("parser didn't return success")
       }
@@ -232,15 +234,15 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
     beQuietDuring {
       interpret(s.script) match {
         case IR.Success =>
-          if (lastRequest map (_.extractionValue.isDefined) getOrElse false)
-            RazScript.RSSucc(lastRequest.get.extractionValue get)
+          if (razlastRequest map (_.extractionValue.isDefined) getOrElse false)
+            RazScript.RSSucc(razlastRequest.get.extractionValue get)
           else
             RazScript.RSSuccNoValue
         case IR.Error => {
           val c =
-            if (lastRequest.get.valueNames.contains("lastException"))
+            if (razlastRequest.get.valueNames.contains("lastException"))
               RazScript.RSError(evalExpr[Exception]("lastException").getMessage)
-            else RazScript.RSError(lastRequest.get.err mkString "\n\r")
+            else RazScript.RSError(razlastRequest.get.err mkString "\n\r")
           errAccumulator.clear
           c
         }
@@ -254,7 +256,7 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
     val ret = new scala.collection.mutable.HashMap[String, Any]()
     // TODO get the value of x nicer
     for (
-      x <- lastRequest.get.valueNames if (x != "lastException" && !x.startsWith("synthvar$") && x != "ctx")
+      x <- razlastRequest.get.valueNames if (x != "lastException" && !x.startsWith("synthvar$") && x != "ctx")
     ) {
       val xx = (x -> evalExpr[Any](x))
       razie.Debug("bound: " + xx)

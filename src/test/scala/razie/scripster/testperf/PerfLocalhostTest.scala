@@ -1,4 +1,4 @@
-package razie.scripster.test
+package razie.scripster.testperf
 
 import org.junit.Test
 import razie.base.scripting._
@@ -9,9 +9,9 @@ import com.razie.pub.comms.AgentHandle
 import com.razie.pub.base.NoStatics
 import com.razie.pub.comms.Agents
 import com.razie.pub.comms.AgentCloud
-import org.junit.BeforeClass
 import org.junit.Before
 import razie.Snakk
+import scala.Option.option2Iterable
 
 class PerfLocalhostTest extends MustMatchers {
 

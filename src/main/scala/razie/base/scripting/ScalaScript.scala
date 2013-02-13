@@ -6,9 +6,15 @@
  */
 package razie.base.scripting
 
+import java.io.File
+import java.net.URL
+import java.net.URLClassLoader
+
+import scala.Array.canBuildFrom
+import scala.collection.JavaConversions.seqAsJavaList
+import scala.tools.nsc
+
 import razie.base.ActionContext
-import scala.tools.{ nsc => nsc }
-import scala.tools.nsc.{ InterpreterResults => IR }
 
 /**
  * will cache the environment, including the parser instance.
@@ -17,7 +23,7 @@ import scala.tools.nsc.{ InterpreterResults => IR }
 class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl(parent) {
 
   private[this] val soon = razie.Threads.promise {
-    val ppp = ScalaScript mkParser err
+    val ppp = this mkParser err
     ppp.evalExpr[Any]("1+2") // prime the parser
     ppp
   }
@@ -32,14 +38,14 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   }
 
   /** content assist options */
-  override def options(scr: String, pos:Int): java.util.List[String] = {
-    ScalaScript.bind(this, parser)
+  override def options(scr: String, pos: Int): java.util.List[String] = {
+    bind(this, parser)
     val l = new java.util.ArrayList[String]()
     val newscr1 = scr.replaceFirst("^[ \t]+", "")
     val newscr2 = newscr1.trim
-    val newpos = pos-(scr.length-newscr1.length)
+    val newpos = pos - (scr.length - newscr1.length)
     val output = comp.completer().complete(newscr2, newpos)
-    import scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
     l.addAll(output.candidates)
     l
   }
@@ -49,25 +55,32 @@ class ScalaScriptContext(parent: ActionContext = null) extends ScriptContextImpl
   def err(s: String): Unit = { lastError = s }
 
   var expr: Boolean = true // I'm in expression mode versus interpret mode
-}
 
-/** utility builders */
-object ScalaScriptContext {
-  def apply(parms: Map[String, Any]) = {
-    val s = new ScalaScriptContext(null)
-    parms foreach (t => s.set(t._1, t._2))
-    s
-  }
-  def apply(parms: (String, Any)*) = {
-    val s = new ScalaScriptContext(null)
-    parms foreach (t => s.set(t._1, t._2))
-    s
-  }
-}
+  /** make a new parser/interpreter instance using the given error logger */
+  def mkParser(errLogger: String => Unit) = {
+    // when in managed class loaders we can't just use the javacp
+    // TODO make this work for any managed classloader - it's hardcoded for sbt
+    val env = {
+      if (ScalaScript.getClass.getClassLoader.getResource("app.class.path") != null) {
+        razie.Debug("Scripster using app.class.path and boot.class.path")
+        // see http://gist.github.com/404272
+        val settings = new nsc.Settings(errLogger)
+        settings embeddedDefaults getClass.getClassLoader
+        razie.Debug("Scripster using classpath: " + settings.classpath.value)
+        razie.Debug("Scripster using boot classpath: " + settings.bootclasspath.value)
+        settings
+      } else {
+        razie.Debug("Scripster using java classpath")
+        val env = new nsc.Settings(errLogger)
+        env.usejavacp.value = true
+        env
+      }
+    }
 
-/** some statics */
-object ScalaScript {
-  def apply(s: String) = new ScalaScript(s)
+    val p = new RazieInterpreter(env)
+    p.setContextClassLoader
+    p
+  }
 
   /**
    * bind the values inside the context to the given interpreter instance
@@ -98,9 +111,102 @@ object ScalaScript {
     }
   }
 
+}
+
+/**
+ * will cache the environment, including the parser instance.
+ * That way things defined in one script are visible to the next
+ */
+class SBTScalaScriptContext(parent: ActionContext = null) extends ScalaScriptContext(parent) {
+
   /** make a new parser/interpreter instance using the given error logger */
-  def mkParser(errLogger: String => Unit) = RazieInterpreter mkParser errLogger
-  
+  override def mkParser(errLogger: String => Unit) = {
+    // when in managed class loaders we can't just use the javacp
+    // TODO make this work for any managed classloader - it's hardcoded for sbt
+    val env = {
+      val settings = new nsc.Settings(errLogger)
+      settings embeddedDefaults getClass.getClassLoader
+      settings.Yreplsync.value = true
+      val myLoader = new ReplClassloader(getClass.getClassLoader)
+      settings.embeddedDefaults(myLoader)
+
+      razie.Debug("Scripster using classpath: " + settings.classpath.value)
+      razie.Debug("Scripster using boot classpath: " + settings.bootclasspath.value)
+      settings
+    }
+
+    val p = new RazieInterpreter(env)
+    p.setContextClassLoader
+    p
+  }
+
+}
+
+/**
+ * To run the Scala compiler programatically, we need to provide it with a
+ * classpath, as we would if we invoked it from the command line. We need
+ * to introspect our classloader (accounting for differences between execution
+ * environments like IntelliJ, SBT, or WebStart), and find the paths to JAR
+ * files on disk.
+ */
+final class ReplClassloader(parent: ClassLoader) extends ClassLoader(parent) with razie.Logging {
+  override def getResource(name: String): URL = {
+    // Rather pass `settings.usejavacp.value = true` (which doesn't work
+    // under SBT) we do the same as SBT and respond to a resource request
+    // by the compiler for the magic name "app.classpath", write the JAR files
+    // from our classloader to a temporary file, and return that as the resource.
+    if (name == "app.class.path") {
+      def writeTemp(content: String): File = {
+        val f = File.createTempFile("classpath", ".txt")
+        //          IO.writeFile(f, content)
+        val p = new java.io.PrintWriter(f)
+        p.print(content)
+        p.close
+        f
+      }
+      debug("Attempting to configure Scala classpath based on classloader: " + getClass.getClassLoader)
+      val superResource = super.getResource(name)
+      if (superResource != null) superResource // In SBT, let it do it's thing
+      else getClass.getClassLoader match {
+        case u: URLClassLoader =>
+          // Rather pass `settings.usejavacp.value = true` (which doesn't work
+          // under SBT) we do the same as SBT and respond to a resource request
+          // by the compiler for the magic name "app.classpath"
+          info("yay...")
+          val files = u.getURLs.map(x => new java.io.File(x.toURI))
+          val f = writeTemp(files.mkString(File.pathSeparator))
+          f.toURI.toURL
+        case _ =>
+          // We're hosed here.
+          info("uh-oh")
+          null
+      }
+    } else super.getResource(name)
+  }
+}
+
+/** utility builders */
+object ScalaScriptContext {
+  def apply(parms: Map[String, Any]) = {
+    val s = new ScalaScriptContext(null)
+    parms foreach (t => s.set(t._1, t._2))
+    s
+  }
+  def apply(parms: (String, Any)*) = {
+    val s = new ScalaScriptContext(null)
+    parms foreach (t => s.set(t._1, t._2))
+    s
+  }
+  def sbt(parms: Map[String, Any]) = {
+    val s = new SBTScalaScriptContext(null)
+    parms foreach (t => s.set(t._1, t._2))
+    s
+  }
+}
+
+/** some statics */
+object ScalaScript {
+  def apply(s: String) = new ScalaScript(s)
   /** convenience - make a new context here */
   def mkContext = new ScalaScriptContext()
 }
@@ -125,10 +231,10 @@ class ScalaScript(val script: String) extends RazScript with razie.Logging {
         Some(ctx.asInstanceOf[ScalaScriptContext])
       else None
 
-    val p = sctx.map(_.parser) getOrElse (ScalaScript mkParser println)
+    val p = sctx.map(_.parser) getOrElse (sctx.get mkParser println)
 
     try {
-      ScalaScript.bind(ctx, p)
+      sctx.get.bind(ctx, p)
 
       // this see http://lampsvn.epfl.ch/trac/scala/ticket/874 at the end, there was some work with jsr223
 
@@ -167,10 +273,10 @@ class ScalaScript(val script: String) extends RazScript with razie.Logging {
         Some(ctx.asInstanceOf[ScalaScriptContext])
       else None
 
-    val p = sctx.map(_.parser) getOrElse (ScalaScript mkParser println)
+    val p = sctx.map(_.parser) getOrElse (sctx.get mkParser println)
 
     try {
-      ScalaScript.bind(ctx, p)
+      sctx.get.bind(ctx, p)
 
       val ret = p.eval(this)
 
