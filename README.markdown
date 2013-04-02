@@ -21,9 +21,13 @@ It can be embedded into any application and shares the same port for telnet as w
 How?
 ----
 
-In the sbt Project file for your project (project/build/Project.scala), add the dependency: 
+In the sbt Project file for your project (project/build/Project.scala or project/Build.scala), add the dependency: 
 
-    val scrip = "com.razie" % "scripster_2.9.1" % "0.8.1-SNAPSHOT"
+    "com.razie" % "scripster_2.9.1" % "0.8.1-SNAPSHOT"
+
+or
+
+    "com.razie" % "scripster_2.10" % "0.8.3-SNAPSHOT"
 
 If you want to build it, see [building instructions](blob/master/Building.markdown).
 
