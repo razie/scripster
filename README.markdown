@@ -18,16 +18,30 @@ So anyone can interact with a running application, having access to all or some 
 What is so special about the scrispter? It has full syntax coloring and content assist, for starters! 
 It can be embedded into any application and shares the same port for telnet as well as web access...
 
-How?
-----
 
-In the sbt Project file for your project (project/build/Project.scala or project/Build.scala), add the dependency: 
+How to use
+---------------------
+
+The sbt/maven artifact is:
+>>>>>>> small cleanups
 
     "com.razie" % "scripster_2.9.1" % "0.8.1-SNAPSHOT"
 
 or
 
     "com.razie" % "scripster_2.10" % "0.8.3-SNAPSHOT"
+
+Make sure that, if you use a SNAPSHOT version, the snapshots repository is added to sbt, as in https://github.com/razie/
+scripster/blob/master/project/Build.scala :
+
+    resolvers ++= Seq("snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+                      "releases"  at "http://oss.sonatype.org/content/repositories/releases")
+
+
+Versions
+
+- 0.8.2-SNAPSHOT is the last 2.9.1 build
+- 0.8.3-SNAPSHOT is the 2.10.0 build
 
 If you want to build it, see [building instructions](blob/master/Building.markdown).
 

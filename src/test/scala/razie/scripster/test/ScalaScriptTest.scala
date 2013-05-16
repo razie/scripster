@@ -104,7 +104,7 @@ def add (i:Int*) = {
     val res = razie.Timer {
       try {
         Scripster.execWithin (5000) ("scala", "while(true) print(\"\")", c.id)
-      } catch { case _ => ; }
+      } catch { case _:Throwable => ; }
     }._1 
     res >= 5000 && res < 6000 
   }
@@ -115,7 +115,7 @@ def add (i:Int*) = {
     val res = razie.Timer {
       try {
         Scripster.execWithin (5000) ("scala", "while(true) {} ", c.id)
-      } catch { case _ => ; }
+      } catch { case _:Throwable => ; }
     }._1
     res >= 5000 && res < 6000 
   }
