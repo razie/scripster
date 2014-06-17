@@ -2,22 +2,22 @@ import sbt._
 import Keys._
 
 object V {
-  val version      = "0.8.3-SNAPSHOT"
-  val scalaVersion = "2.10.0" // "2.9.1"
+  val version      = "0.8.6-SNAPSHOT"
+  val scalaVersion = "2.10.3" 
   val organization = "com.razie"
 
   def snap = (if (V.version endsWith "-SNAPSHOT") "-SNAPSHOT" else "")
 
   def SCALAVER   = scalaVersion
 
-  def RAZBASEVER = "0.6.4" + snap
-  def SNAKKVER   = "0.6.4" + snap
-  def LIGHTSOAVER = "0.6.4" + snap
+  def RAZBASEVER = "0.6.6" + snap
+  def SNAKKVER   = "0.6.6" + snap
+  def LIGHTSOAVER = "0.6.6" + snap
 }
 
 object MyBuild extends Build {
 
-  def scalatest = "org.scalatest"  % "scalatest_2.10.0" % "1.8"
+  def scalatest = "org.scalatest" %% "scalatest"       % "1.9.2"
   def junit     = "junit"          % "junit"           % "4.5"      % "test->default"
   def json      = "org.json"       % "json"            % "20090211"
   
@@ -25,7 +25,7 @@ object MyBuild extends Build {
   def scalaComp  = "org.scala-lang" % "scala-compiler" % V.SCALAVER 
   def scalaLib   = "org.scala-lang" % "scala-library"  % V.SCALAVER 
 
-  def scalazCore = "org.scalaz" % "scalaz-core_2.10"  % "6.0.4"
+  def scalazCore = "org.scalaz"    %% "scalaz-core"    % "7.0.3"
 
   val snakk    = "com.razie" %% "snakk-core"      % V.SNAKKVER
   def razBase  = "com.razie" %% "razbase"         % V.RAZBASEVER
@@ -53,8 +53,8 @@ object MyBuild extends Build {
         Some ("Sonatype" at "https://oss.sonatype.org/content/repositories/releases/")
     } ,
 
-    resolvers ++= Seq("snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-                      "releases"  at "http://oss.sonatype.org/content/repositories/releases")
+    resolvers ++= Seq("snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+                      "releases"  at "https://oss.sonatype.org/content/repositories/releases")
     )
 }
 
