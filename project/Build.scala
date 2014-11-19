@@ -3,7 +3,7 @@ import Keys._
 
 object V {
   val version      = "0.8.6-SNAPSHOT"
-  val scalaVersion = "2.10.3" 
+  val scalaVersion = "2.10.4" 
   val organization = "com.razie"
 
   def snap = (if (V.version endsWith "-SNAPSHOT") "-SNAPSHOT" else "")
@@ -28,17 +28,29 @@ object MyBuild extends Build {
   def scalazCore = "org.scalaz"    %% "scalaz-core"    % "7.0.3"
 
   val snakk    = "com.razie" %% "snakk-core"      % V.SNAKKVER
-  def razBase  = "com.razie" %% "razbase"         % V.RAZBASEVER
+  def razBase  = "com.razie" %% "base"            % V.RAZBASEVER
+  def razBaseA = "com.razie" %% "razbase"         % V.RAZBASEVER
   def swing20  = "com.razie" %% "s20swing"        % V.RAZBASEVER
   def lightsoa = "com.razie" %% "lightsoa-core"   % V.LIGHTSOAVER
 
   lazy val root = Project(id="scripster",    base=file("."),
+    settings = defaultSettings ++ Seq()
+    ) aggregate (pcore, pweb)
+
+  lazy val pcore = Project(id="scripster-core",    base=file("core"),
     settings = defaultSettings ++ 
       Seq(libraryDependencies ++= Seq(
-        scalatest, junit, json, scalaSwing, scalaComp, scalazCore, razBase, snakk, lightsoa, swing20))
+        scalatest, junit, json, scalaComp, razBase, snakk))
         ) 
 
-  def defaultSettings = Defaults.defaultSettings ++ Seq (
+  lazy val pweb = Project(id="scripster-web",    base=file("web"),
+    settings = defaultSettings ++ 
+      Seq(libraryDependencies ++= Seq(
+        scalatest, junit, json, scalaSwing, scalaComp, scalazCore, razBaseA, snakk, lightsoa, swing20))
+        ) dependsOn (pcore)
+
+  def defaultSettings = baseSettings ++ Seq()
+  def baseSettings = Defaults.defaultSettings ++ Seq (
     scalaVersion         := V.scalaVersion,
     version              := V.version,
 

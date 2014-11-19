@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/resources"/>
-	<classpathentry kind="src" path="src/main/scala"/>
-	<classpathentry kind="src" path="src/test/scala"/>
+	<classpathentry kind="src" path="web/src/main/resources"/>
+	<classpathentry kind="src" path="core/src/main/scala"/>
+	<classpathentry kind="src" path="core/src/test/scala"/>
+	<classpathentry kind="src" path="web/src/main/scala"/>
+	<classpathentry kind="src" path="web/src/test/scala"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/razbase"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
@@ -12,6 +14,6 @@
 	<classpathentry kind="lib" path="lib_managed/jars/org.json/json/json-20090211.jar"/>
 	<classpathentry kind="lib" path="lib_managed/jars/org.slf4j/slf4j-api/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"/>
-	<classpathentry kind="lib" path="lib_managed/jars/org.scalatest/scalatest_2.10.0/scalatest_2.10.0-1.8.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/org.scalatest/scalatest_2.10/scalatest_2.10-1.9.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
