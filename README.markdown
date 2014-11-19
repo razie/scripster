@@ -9,7 +9,7 @@
 What?
 =====
 
-Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.coolscala.com/scripster](http://wiki.coolscala.com/scripster). Try it online at [http://www.tryscala.com](tryscala.com) or see [building instructions](https://github.com/razie/scripster/blob/master/Building.markdown).
+Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.coolscala.com/scripster](http://wiki.coolscala.com/scripster). Try it online at [http://www.tryscala.com](http://www.tryscala.com) or see [building instructions](Building.markdown).
 
 Why?
 ----
@@ -33,8 +33,7 @@ If you want to build it, see [building instructions](blob/master/Building.markdo
 
 If instead you just want to run it or add it to your runnables as a single Jar file, use the latest distribution jar from the github downloads and use it in the classpath.
 
-Make sure that, if you use a SNAPSHOT version, the snapshots repository is added to sbt, as in https://github.com/razie/
-scripster/blob/master/project/Build.scala :
+Make sure that, if you use a SNAPSHOT version, the snapshots repository is added to sbt, as in project/Build.scala :
 
     resolvers ++= Seq("snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
                       "releases"  at "http://oss.sonatype.org/content/repositories/releases")
