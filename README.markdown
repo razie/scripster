@@ -11,6 +11,8 @@ What?
 
 Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.coolscala.com/scripster](http://wiki.coolscala.com/scripster). Try it online at [http://www.tryscala.com](http://www.tryscala.com) or see [building instructions](Building.markdown).
 
+Note this project is **not maintained anymore**. Scala now supports JSR 223. 
+
 Why?
 ----
 So anyone can interact with a running application, having access to all or some of the application's objects. 
