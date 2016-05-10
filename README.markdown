@@ -11,7 +11,7 @@ What?
 
 Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.coolscala.com/scripster](http://wiki.coolscala.com/scripster). Try it online at [http://www.tryscala.com](http://www.tryscala.com) or see [building instructions](Building.markdown).
 
-Note this project is **not maintained anymore**. Scala now supports JSR 223 and the server/hosting and other DCI aspects of this project have been rolled up in other projects, notably [the scala wiki engine](https://github.com/razie/wikireactor).
+Note this project is **not maintained anymore**. Scala now supports JSR 223 and the server/hosting and other DCI aspects of this project have been rolled up in other projects, notably [the scala wiki engine](https://github.com/razie/wikireactor). Even though content assist and other features are cool, there's much hassle in maintaining this across scala compiler versions and sbt/play/production settings and classloaders etc.
 
 Why?
 ----
