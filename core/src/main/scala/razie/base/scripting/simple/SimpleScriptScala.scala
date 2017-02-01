@@ -205,7 +205,8 @@ class RazieInterpreterImpl(s: nsc.Settings) extends nsc.Interpreter(s) {
       PublicRequest(
         l.referencedNames.map(_.decode),
         l.handlers.collect { case x: ValHandler => x.name }.map(_.decode),
-        try l.lineRep.callOpt("$result") catch { case _:Throwable => None }, //l.extractionValue,  // TODO hides some errors
+        try l.lineRep.callEither("$result").right.toOption catch { case _:Throwable => None },
+// 2.10        try l.lineRep.callOpt("$result") catch { case _:Throwable => None }, //l.extractionValue,  // TODO hides some errors
 //worked in 2.9.0-1        try l.getEval catch { case _ => None }, //l.extractionValue,  // TODO hides some errors
         errAccumulator.toList))
 

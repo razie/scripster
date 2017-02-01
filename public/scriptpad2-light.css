@@ -1,0 +1,40 @@
+
+textarea {background: #ddd; color: black; border: 2px solid #fff}
+div.ScriptPad {
+        position: relative;
+        width: 800px;
+        height: 400px;
+}
+
+#m1
+{  position: absolute;
+   visibility: hidden;
+   margin: 0;
+   padding: 0;
+   background: #000000;
+   border: 1px solid #5970B2;
+   z-index:3;
+ }
+
+   #m1 a
+   {  position: relative;
+      display: block;
+      margin: 0;
+      padding: 5px 10px;
+      width: auto;
+      white-space: nowrap;
+      text-align: left;
+      text-decoration: none;
+      background: #00EAEBD8;
+      color: red;
+      font: 11px arial;
+    }
+
+   #m1 a:hover
+   {  background: yellow;
+      color: blue;
+    }
+
+.razsel
+   {  background: yellow;
+      color: blue}

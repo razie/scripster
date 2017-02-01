@@ -1,0 +1,122 @@
+<html>
+  <head> <title></title> </head>
+  <body>
+
+<div id="container" style="width:300px;height:200px; border:1px solid green"></div>
+
+<form name="Show">
+X <input type="text" name="MouseX" value="0" size="9">
+Y <input type="text" name="MouseY" value="0" size="9"><br>
+</form>
+
+<script>
+   // Inspired from a few places, like 
+   // http://www.codelifter.com 
+   // http://www.experts-exchange.com/Web_Development/Web_Languages-Standards/CSS/Q_23151088.html
+
+   var newDiv = document.createElement('DIV');
+   newDiv.style.position =  'absolute';
+   newDiv.style.width =  '20px';
+   newDiv.style.height = '20px';
+   newDiv.style.left = '50px';   
+   newDiv.style.top = '50px';   
+   newDiv.style.border = "1px solid red";   
+   newDiv.style.zIndex = 100;   
+   document.getElementById('container').appendChild(newDiv)
+
+   var IE = document.all?true:false;
+
+//if (!IE) document.captureEvents(Event.MOUSEMOVE)
+//document.onmousemove = xy;
+
+var tempX = 0;
+var tempY = 0;
+
+function rMove(tempX, tempY) {
+   var dx = tempX*1000/document.getElementById('container').offsetWidth;
+   var dy = tempY*1000/document.getElementById('container').offsetHeight;
+   document.Show.MouseX.value = tempX+'-'+dx;
+   document.Show.MouseY.value = tempY+'-'+dy;
+
+   newDiv.style.top=tempY+'px';
+   newDiv.style.left=tempX+'px';
+
+//    event.targetTouches[0].target.style.webkitTransform =
+//       'translate(' + curX + 'px, ' + curY + 'px)';
+}
+
+function xy(e) {
+   if (IE) { // grab the x-y pos.s if browser is IE
+      tempX = event.clientX + document.body.scrollLeft;
+      tempY = event.clientY + document.body.scrollTop;
+   }
+   else {  // grab the x-y pos.s if browser is NS
+      tempX = e.pageX;
+      tempY = e.pageY;
+   }  
+
+   if (tempX < 0){tempX = 0;}
+   if (tempY < 0){tempY = 0;}  
+
+   rMove (tempX, tempY)
+   }
+
+function rmMove (e) {
+   e.preventDefault();
+   xy(e)
+}
+
+function rmDown (e) {
+   e.preventDefault();
+   document.getElementById('container').onmousemove=rmMove;
+   xy(e)
+}
+
+function rmUp (e) {
+   document.getElementById('container').onmousemove=null;
+   xy(e)
+}
+
+var c = document.getElementById('container')
+c.onmousedown=rmDown;
+c.onmouseup=rmUp;
+
+//------------------touch stuff on ipod
+
+function txy (e) {
+   //curX = e.targetTouches[0].pageX - startX;
+   //curY = e.targetTouches[0].pageY - startY;
+   curX = e.targetTouches[0].pageX;
+   curY = e.targetTouches[0].pageY;
+   rMove(curX, curY)
+}
+
+function touchStart (e) {
+   e.preventDefault();
+   txy(e)
+}
+
+function touchMove (e) {
+   e.preventDefault();
+   txy(e)
+}
+
+function touchEnd (e) {
+   e.preventDefault();
+   txy(e)
+}
+
+c.addEventListener("touchstart", touchStart, false);
+c.addEventListener("touchmove", touchMove, false);
+c.addEventListener("touchend", touchEnd, false);
+//c.addEventListener("touchcancel", touchCancel, false);
+
+//c.addEventListener("gesturestart", gestureStart, false);
+//c.addEventListener("gesturechange", gestureChange, false);
+//c.addEventListener("gestureend", gestureEnd, false);
+
+</script>
+
+</body>
+</html>
+

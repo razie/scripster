@@ -1,0 +1,19 @@
+<classpath>
+  <classpathentry kind="src" path="src/main/scala"/>
+  <classpathentry kind="src" path="src/test/scala"/>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"/>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11/bundles/scala-xml_2.11-1.0.4.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11/bundles/scala-parser-combinators_2.11-1.0.4.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/org.scalatest/scalatest_2.11/jars/scalatest_2.11-2.1.3.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/org.json/json/jars/json-20090211.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/local/com.razie/base_2.11/0.9.1/jars/base_2.11.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/junit/junit/jars/junit-4.5.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/ch.qos.logback/logback-classic/jars/logback-classic-1.0.0.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/ch.qos.logback/logback-core/jars/logback-core-1.0.0.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.6.4.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/local/com.razie/snakk-core_2.11/0.9.1/jars/snakk-core_2.11.jar"/>
+  <classpathentry kind="lib" path="/Users/raz/.ivy2/cache/commons-jxpath/commons-jxpath/jars/commons-jxpath-1.3.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="output" path="bin"/>
+</classpath>

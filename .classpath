@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="web/src/main/resources"/>
-	<classpathentry kind="src" path="core/src/main/scala"/>
-	<classpathentry kind="src" path="core/src/test/scala"/>
 	<classpathentry kind="src" path="web/src/main/scala"/>
+	<classpathentry kind="src" path="core/src/main/scala"/>
 	<classpathentry kind="src" path="web/src/test/scala"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/razbase"/>
+	<classpathentry kind="src" path="web/src/main/resources"/>
+	<classpathentry kind="src" path="core/src/test/scala"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/snakked"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/lightsoa"/>
-	<classpathentry kind="lib" path="lib_managed/jars/org.json/json/json-20090211.jar"/>
-	<classpathentry kind="lib" path="lib_managed/jars/org.slf4j/slf4j-api/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"/>
-	<classpathentry kind="lib" path="lib_managed/jars/org.scalatest/scalatest_2.10/scalatest_2.10-1.9.2.jar"/>
+	<classpathentry kind="lib" path="lib_managed/bundles/org.scala-lang.modules/scala-xml_2.11/scala-xml_2.11-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib_managed/bundles/org.scala-lang.modules/scala-parser-combinators_2.11/scala-parser-combinators_2.11-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/org.scalatest/scalatest_2.11/scalatest_2.11-2.1.3.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/org.json/json/json-20090211.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/com.razie/base_2.11/base_2.11-0.9.1.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/junit/junit/junit-4.5.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/ch.qos.logback/logback-classic/logback-classic-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/ch.qos.logback/logback-core/logback-core-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/org.slf4j/slf4j-api/slf4j-api-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/com.razie/snakk-core_2.11/snakk-core_2.11-0.9.1.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/commons-jxpath/commons-jxpath/commons-jxpath-1.3.jar"/>
+	<classpathentry kind="lib" path="lib_managed/bundles/org.scalaz/scalaz-core_2.11/scalaz-core_2.11-7.2.1.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/com.razie/razbase_2.11/razbase_2.11-0.9.1.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/com.razie/s20widgets_2.11/s20widgets_2.11-0.9.1.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/com.razie/razweb_2.11/razweb_2.11-0.9.1.jar"/>
+	<classpathentry kind="lib" path="lib_managed/jars/com.razie/lightsoa-core_2.11/lightsoa-core_2.11-0.9.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
