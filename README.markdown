@@ -7,6 +7,8 @@ Embeddable interactive scripting pad for scala. It is available over telnet, htt
 
 Note this project is **not maintained anymore**. Scala now supports JSR 223 and the server/hosting and other DCI aspects of this project have been rolled up in other projects, notably [the scala DSL wiki engine](https://github.com/razie/diesel-hydra). Even though content assist and other features are cool, it's not easy maintaining this across scala compiler versions and sbt/play/production settings and classloaders etc.
 
+Notably, this project made scala server scripting available via not only http/web but also a simple telnet session, including content-assist!
+
 Why?
 ----
 So anyone can interact with a running application, having access to all or some of the application's objects. 
