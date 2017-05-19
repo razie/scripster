@@ -1,17 +1,11 @@
-    /**  ____    __    ____  ____  ____/___      ____  __  __  ____
-     *  (  _ \  /__\  (_   )(_  _)( ___) __)    (  _ \(  )(  )(  _ \
-     *   )   / /(__)\  / /_  _)(_  )__)\__ \     )___/ )(__)(  ) _ <
-     *  (_)\_)(__)(__)(____)(____)(____)___/    (__)  (______)(____/
-     *                      
-     *  Copyright (c) Razvan Cojocaru, 2007+, Creative Commons Attribution 3.0
-     */
+Status: This project morphed into the [DSL Wiki](https://github.com/razie/diesel-hydra).
 
 What?
 =====
 
-Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Read the guide at [http://wiki.coolscala.com/scripster](http://wiki.coolscala.com/scripster). Try it online at [http://www.tryscala.com](http://www.tryscala.com) or see [building instructions](Building.markdown).
+Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Try it online at [http://www.tryscala.com](http://www.tryscala.com) or see [building instructions](Building.markdown).
 
-Note this project is **not maintained anymore**. Scala now supports JSR 223 and the server/hosting and other DCI aspects of this project have been rolled up in other projects, notably [the scala wiki engine](https://github.com/razie/wikireactor). Even though content assist and other features are cool, it's not easy maintaining this across scala compiler versions and sbt/play/production settings and classloaders etc.
+Note this project is **not maintained anymore**. Scala now supports JSR 223 and the server/hosting and other DCI aspects of this project have been rolled up in other projects, notably [the scala DSL wiki engine](https://github.com/razie/diesel-hydra). Even though content assist and other features are cool, it's not easy maintaining this across scala compiler versions and sbt/play/production settings and classloaders etc.
 
 Why?
 ----
