@@ -1,13 +1,22 @@
-Status: This project morphed into the [DSL Wiki](https://github.com/razie/diesel-hydra).
+Status: Not maintained: this project morphed into the [DSL Wiki](https://github.com/razie/diesel-hydra).
 
 What?
 =====
 
-Embeddable interactive scripting pad for scala. It is available over telnet, http and swing. Try it online at [http://www.tryscala.com](http://www.tryscala.com) or see [building instructions](Building.markdown).
+Embeddable interactive scripting pad for scala. It is available over telnet, http and swing.
 
 Note this project is **not maintained anymore**. Scala now supports JSR 223 and the server/hosting and other DCI aspects of this project have been rolled up in other projects, notably [the scala DSL wiki engine](https://github.com/razie/diesel-hydra). Even though content assist and other features are cool, it's not easy maintaining this across scala compiler versions and sbt/play/production settings and classloaders etc.
 
 Notably, this project made scala server scripting available via not only http/web but also a simple telnet session, including content-assist!
+
+Tryscala.com
+============
+
+Tryscala.com was an online scripting/fiddle for scala, with content assist, short URL fiddles (based on), forking etc.
+
+It was retired in 2017, as https://scalafiddle.io/ seems good enough. Many of its features were morphed into the[DSL Wiki](https://github.com/razie/diesel-hydra).
+
+https://raw.githubusercontent.com/razie/razie.github.io/master/Public/tryscala.jpeg
 
 Why?
 ----
