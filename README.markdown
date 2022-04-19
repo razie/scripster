@@ -16,7 +16,7 @@ Tryscala.com was an online scripting/fiddle for scala, with content assist, shor
 
 It was retired in 2017, as https://scalafiddle.io/ seems good enough. Many of its features were morphed into the[DSL Wiki](https://github.com/razie/diesel-hydra).
 
-https://raw.githubusercontent.com/razie/razie.github.io/master/Public/tryscala.jpeg
+<img src="https://raw.githubusercontent.com/razie/razie.github.io/master/Public/tryscala.jpeg"/>
 
 Why?
 ----
